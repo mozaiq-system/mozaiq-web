@@ -1,0 +1,23 @@
+{
+  "models": {
+    "default": {
+      "title": "Llama 3.1 (Ollama)",
+      "provider": "ollama",
+      "model": "llama3.1"
+    },
+    "coder": {
+      "title": "DeepSeek Coder V2 (Ollama)",
+      "provider": "ollama",
+      "model": "deepseek-coder-v2"
+    }
+  },
+  "systemMessage": "You are a senior frontend engineer. Keep edits minimal and runnable. Explain diffs briefly.",
+  "allowAnonymousTelemetry": false,
+  "embeddingsProvider": {
+    "provider": "local"
+  },
+  "temperature": 0.2,
+  "contextFiles": [
+    "ARCHITECTURE.md"
+  ]
+}
