@@ -1,0 +1,398 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* MOZAIQ design system colors */
+  --background: #ffffff;
+  --foreground: #1a1a1f;
+  --surface: #f8f8fc;
+  --accent: #6c4aff;
+  --accent-light: #9b7fff;
+  --text-secondary: #6f6f80;
+  --border: #e5e5ef;
+  --input-bg: #f9f9fb;
+  --tag-chip-active: rgba(108, 74, 255, 0.083);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --card: #ffffff;
+  --card-foreground: #1a1a1f;
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 1rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  /* MOZAIQ dark mode colors */
+  --background: #0d0d10;
+  --foreground: #ededf5;
+  --surface: #1a1a1f;
+  --accent: #6c4aff;
+  --accent-light: #9b7fff;
+  --text-secondary: #a0a0b2;
+  --border: #2a2a30;
+  --input-bg: #141417;
+  --tag-chip-active: rgba(107, 79, 255, 0.188);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --card: #1a1a1f;
+  --card-foreground: #f8f8fc;
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --font-sans: "Noto Sans", sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    /* Updated to use 0.3s transition for smooth color changes */
+    @apply bg-background text-foreground transition-colors duration-300 ease-in-out;
+  }
+}
+
+/* Custom MOZAIQ styles for smooth transitions and specialized components */
+@layer components {
+  .theme-transition {
+    /* Updated to use 0.3s ease-in-out for smoother color transitions */
+    @apply transition-colors duration-300 ease-in-out;
+  }
+
+  .playlist-grid {
+    @apply grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+
+  .tag-chip {
+    /* Refined to pill shape with proper border, transparent background, and smooth transitions */
+    @apply inline-flex items-center gap-2 px-2 py-1 rounded-full border transition-all duration-200 ease-in-out cursor-pointer;
+    border: 1px solid var(--border);
+    background-color: transparent;
+    color: var(--foreground);
+  }
+
+  .tag-chip:hover {
+    /* Removed flashy hover effects - keep border stable and only cursor pointer for minimal interaction */
+    /* Border and background remain unchanged on hover */
+  }
+
+  .tag-chip:focus-within {
+    /* Focus state simplified - only accent border, no inner shadow */
+    border-color: var(--accent);
+  }
+
+  /* Added new selected state for multi-tag filtering with light/dark mode colors */
+  .tag-chip-selected {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+
+  .dark .tag-chip-selected {
+    background-color: var(--accent-light);
+    border-color: var(--accent-light);
+    color: #0d0d10;
+  }
+
+  .tag-chip-active {
+    /* Active state with translucent accent fill - light: #6C4AFF15, dark: #6C4AFF30 */
+    background-color: rgba(108, 74, 255, 0.083);
+    border-color: var(--accent);
+    color: var(--foreground);
+  }
+
+  .dark .tag-chip-active {
+    background-color: rgba(108, 74, 255, 0.188);
+  }
+
+  .tag-chip button {
+    /* Updated button transitions to 0.2s for add/remove animations only */
+    color: var(--text-secondary);
+    transition: color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  }
+
+  .tag-chip button:hover {
+    color: var(--accent);
+    opacity: 1;
+  }
+
+  .surface-card {
+    /* Updated to use 0.3s transitions with ease-in-out */
+    @apply rounded-2xl p-4 transition-all duration-300 ease-in-out;
+    background-color: var(--surface);
+    color: var(--foreground);
+  }
+
+  .dark .surface-card {
+    background-color: var(--surface);
+  }
+
+  /* Updated input field with improved light mode background, border colors, placeholder, and subtle inner shadow */
+  .input-field {
+    @apply w-full px-4 py-2.5 rounded-lg border transition-all duration-300 ease-in-out;
+    background-color: var(--input-bg);
+    border-color: var(--border);
+    color: var(--foreground);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .input-field::placeholder {
+    color: #9b9ba5;
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Updated page gradient - light mode has pure white background, dark mode has gradient */
+  .page-gradient {
+    background: #ffffff;
+    transition: background 0.3s ease-in-out;
+  }
+
+  .dark .page-gradient {
+    background: linear-gradient(180deg, #0d0d10 0%, #141420 100%);
+  }
+
+  /* Added profile avatar dropdown styles */
+  .profile-dropdown {
+    @apply absolute left-0 mt-2 w-44 rounded-lg border shadow-lg;
+    background-color: var(--background);
+    border-color: var(--border);
+  }
+
+  .profile-menu-item {
+    @apply flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors duration-200 ease-in-out cursor-pointer;
+    color: var(--foreground);
+  }
+
+  .profile-menu-item:hover {
+    background-color: rgba(108, 74, 255, 0.083);
+  }
+
+  .dark .profile-menu-item:hover {
+    background-color: rgba(108, 74, 255, 0.188);
+  }
+
+  /* Modal chip styles - pill shape with mode-specific colors and remove icon */
+  .modal-tag-chip {
+    @apply inline-flex items-center justify-between gap-2 px-2 py-1 rounded-full border transition-colors duration-300 ease-in-out;
+    background-color: #eef0ff;
+    border-color: #ccd1ff;
+    color: #1a1a1f;
+  }
+
+  .dark .modal-tag-chip {
+    background-color: #2a2840;
+    border-color: #3a3760;
+    color: #ededf5;
+  }
+
+  .modal-tag-chip:focus-within {
+    border-color: var(--accent);
+    outline: 1px solid var(--accent);
+  }
+
+  .modal-tag-chip-remove {
+    @apply flex items-center justify-center cursor-pointer transition-colors duration-200 ease-in-out;
+    width: 20px;
+    height: 20px;
+    color: #6f6f80;
+    flex-shrink: 0;
+    padding: 0;
+  }
+
+  .dark .modal-tag-chip-remove {
+    color: #a0a0b2;
+  }
+
+  .modal-tag-chip-remove:hover {
+    color: #1a1a1f;
+  }
+
+  .dark .modal-tag-chip-remove:hover {
+    color: #ededf5;
+  }
+
+  /* Add Create Playlist button styles */
+  .create-playlist-btn {
+    @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ease-in-out;
+    background-color: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    cursor: pointer;
+  }
+
+  .create-playlist-btn:hover:not(:disabled) {
+    background-color: var(--accent);
+    color: #ffffff;
+  }
+
+  .create-playlist-btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .create-playlist-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .dark .create-playlist-btn {
+    border-color: var(--accent-light);
+    color: var(--accent-light);
+  }
+
+  .dark .create-playlist-btn:hover:not(:disabled) {
+    background-color: var(--accent-light);
+    color: #0d0d10;
+  }
+
+  /* Add fixed-height hero section with responsive breakpoints */
+  .hero-section {
+    /* Desktop: 360px, Tablet: 320px, Mobile: 280px */
+    height: 280px; /* Mobile first */
+    flex-shrink: 0;
+    transition: height 0.3s ease-in-out;
+  }
+
+  @media (min-width: 640px) {
+    .hero-section {
+      height: 320px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-section {
+      height: 360px;
+    }
+  }
+
+  /* Add tag suggestion dropdown styling */
+  .tag-suggestions-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+  }
+
+  .tag-suggestions-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .tag-suggestions-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .tag-suggestions-list::-webkit-scrollbar-thumb {
+    background-color: var(--accent);
+    border-radius: 3px;
+    opacity: 0.5;
+  }
+
+  .tag-suggestion-item {
+    @apply w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 ease-in-out text-sm font-medium;
+    color: var(--foreground);
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+  }
+
+  .tag-suggestion-item:hover {
+    background-color: var(--accent);
+    color: #ffffff;
+  }
+
+  .dark .tag-suggestion-item:hover {
+    background-color: var(--accent-light);
+    color: #0d0d10;
+  }
+
+  @media (max-width: 640px) {
+    .tag-suggestion-item {
+      min-height: 40px;
+    }
+  }
+}
