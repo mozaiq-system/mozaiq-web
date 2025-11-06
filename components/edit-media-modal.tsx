@@ -59,6 +59,8 @@ export function EditMediaModal({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isComposing, setIsComposing] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const inputContainerRef = useRef<HTMLDivElement>(null)
+  const modalContentRef = useRef<HTMLDivElement>(null)
   const { suggestions, showSuggestions, handleInputChange, openSuggestions, closeSuggestions } =
     useTagAutocomplete(editedTags)
 
@@ -72,6 +74,44 @@ export function EditMediaModal({
   useEffect(() => {
     handleInputChange(tagInput)
   }, [tagInput, handleInputChange])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (inputContainerRef.current && !inputContainerRef.current.contains(event.target as Node)) {
+        closeSuggestions()
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [closeSuggestions])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleModalClickOutside = (event: MouseEvent) => {
+      if (showDeleteConfirm) return
+      if (modalContentRef.current && !modalContentRef.current.contains(event.target as Node)) {
+        onClose()
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (showDeleteConfirm) return
+      if (event.key === "Escape") {
+        onClose()
+      }
+    }
+
+    document.addEventListener("mousedown", handleModalClickOutside)
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("mousedown", handleModalClickOutside)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isOpen, onClose, showDeleteConfirm])
 
   if (!isOpen || !item) return null
 
@@ -118,6 +158,7 @@ export function EditMediaModal({
     if (tagInput.trim()) {
       handleAddTag(tagInput)
     }
+    closeSuggestions()
   }
 
   const handleSave = () => {
@@ -150,7 +191,10 @@ export function EditMediaModal({
         transition={{ duration: 0.25, ease: "easeInOut" }}
         className="fixed inset-0 z-50 flex items-center justify-center px-4"
       >
-        <div className="bg-background rounded-xl border border-border shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+        <div
+          ref={modalContentRef}
+          className="bg-background rounded-xl border border-border shadow-xl w-full max-w-lg sm:max-w-xl lg:max-w-[600px] max-h-[96vh] sm:max-h-[94vh] lg:max-h-[92vh] overflow-y-auto p-4 sm:p-6"
+        >
           <div className="mb-6">
             <div className="w-full aspect-video rounded-lg overflow-hidden mb-4">
               <img src={thumbnail || "/placeholder.svg"} alt="Video thumbnail" className="w-full h-full object-cover" />
@@ -193,7 +237,7 @@ export function EditMediaModal({
               </AnimatePresence>
             </div>
 
-            <div className="relative">
+            <div ref={inputContainerRef} className="relative">
               <input
                 ref={inputRef}
                 type="text"

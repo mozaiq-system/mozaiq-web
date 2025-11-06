@@ -44,7 +44,9 @@ export function useTagAutocomplete(currentTags: string[]) {
       // Set new timer with 100ms delay
       debounceTimer.current = setTimeout(() => {
         filterSuggestions(query)
-        setShowSuggestions(true)
+        if (query.trim()) {
+          setShowSuggestions(true)
+        }
       }, 100)
     },
     [filterSuggestions],
