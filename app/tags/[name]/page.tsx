@@ -266,8 +266,8 @@ export default function TagDetailPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
-        <header className="rounded-xl border border-border bg-background/80 px-4 py-4 shadow-sm backdrop-blur sm:px-6">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-2 py-8 sm:px-3 lg:px-4">
+        <header className="rounded-xl border border-border bg-background/80 px-3 py-4 shadow-sm backdrop-blur sm:px-4">
           <p className="text-sm uppercase tracking-wide text-text-tertiary">Tag detail</p>
           <h1 className="text-2xl font-semibold leading-tight text-balance">{tagName || "Unknown tag"}</h1>
         </header>
@@ -285,14 +285,14 @@ export default function TagDetailPage() {
         {!isLoading && !error && preview && (
           <>
             <section className="rounded-xl border border-border bg-background/80 shadow-sm">
-              <div className="border-b border-border px-4 py-3 sm:px-6">
+              <div className="border-b border-border px-3 py-3 sm:px-4">
                 <h2 className="text-lg font-semibold">Usage summary</h2>
                 <p className="text-sm text-text-secondary">
                   {preview.total} media items currently tagged with{" "}
                   <span className="font-medium">{preview.tag}</span>.
                 </p>
               </div>
-              <div className="grid gap-4 px-4 py-4 sm:grid-cols-2 sm:px-6">
+              <div className="grid gap-4 px-3 py-4 sm:grid-cols-2 sm:px-4">
                 {preview.media.length === 0 ? (
                   <p className="text-sm text-text-secondary">No content uses this tag yet.</p>
                 ) : (
@@ -340,13 +340,13 @@ export default function TagDetailPage() {
                   })
                 }}
               >
-                <div className="border-b border-border px-4 py-3 sm:px-6">
+                <div className="border-b border-border px-3 py-3 sm:px-4">
                   <h2 className="text-lg font-semibold">Rename</h2>
                   <p className="text-sm text-text-secondary">
                     Update the tag label everywhere while keeping associations.
                   </p>
                 </div>
-                <div className="space-y-4 px-4 py-4 sm:px-6">
+                <div className="space-y-4 px-3 py-4 sm:px-4">
                   <label className="flex flex-col gap-2 text-sm">
                     <span className="font-medium text-text-secondary">New name</span>
                     <input
@@ -386,13 +386,13 @@ export default function TagDetailPage() {
                   })
                 }}
               >
-                <div className="border-b border-border px-4 py-3 sm:px-6">
+                <div className="border-b border-border px-3 py-3 sm:px-4">
                   <h2 className="text-lg font-semibold">Merge</h2>
                   <p className="text-sm text-text-secondary">
                     Consolidate this tag into another and keep playlists tidy.
                   </p>
                 </div>
-                <div className="space-y-4 px-4 py-4 sm:px-6">
+                <div className="space-y-4 px-3 py-4 sm:px-4">
                   <label className="flex flex-col gap-2 text-sm">
                     <span className="font-medium text-text-secondary">Destination tag</span>
                     <select
@@ -439,13 +439,13 @@ export default function TagDetailPage() {
                   })
                 }}
               >
-                <div className="border-b border-border px-4 py-3 sm:px-6">
+                <div className="border-b border-border px-3 py-3 sm:px-4">
                   <h2 className="text-lg font-semibold">Delete or replace</h2>
                   <p className="text-sm text-text-secondary">
                     Remove this tag or swap it with a replacement before deleting.
                   </p>
                 </div>
-                <div className="space-y-4 px-4 py-4 sm:px-6">
+                <div className="space-y-4 px-3 py-4 sm:px-4">
                   <label className="flex flex-col gap-2 text-sm">
                     <span className="font-medium text-text-secondary">Replacement (optional)</span>
                     <input

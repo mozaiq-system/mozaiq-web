@@ -85,8 +85,8 @@ export default function TagsIndexPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6">
-        <header className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background/80 px-4 py-4 shadow-sm backdrop-blur sm:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-2 py-8 sm:px-3 lg:px-4">
+        <header className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background/80 px-3 py-4 shadow-sm backdrop-blur sm:px-4">
           <div>
             <p className="text-sm uppercase tracking-wide text-text-tertiary">Tag Control</p>
             <h1 className="text-2xl font-semibold leading-tight">Manage Tags</h1>
@@ -98,7 +98,7 @@ export default function TagsIndexPage() {
 
         <section className="rounded-xl border border-border bg-background/80 shadow-sm backdrop-blur">
           <form
-            className="flex flex-col gap-4 p-4 sm:flex-row sm:items-end sm:justify-between sm:p-6"
+            className="flex flex-col gap-4 p-3 sm:flex-row sm:items-end sm:justify-between sm:p-4 lg:p-5"
             aria-label="Tag filters"
           >
             <div className="flex w-full flex-col gap-2 sm:max-w-sm">
@@ -165,7 +165,7 @@ export default function TagsIndexPage() {
         </section>
 
         <section className="flex-1 overflow-hidden rounded-xl border border-border bg-background/80 shadow-sm backdrop-blur">
-          <header className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6">
+          <header className="flex items-center justify-between border-b border-border px-3 py-3 sm:px-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <input
@@ -196,20 +196,20 @@ export default function TagsIndexPage() {
 
           <div role="grid" aria-rowcount={filteredTags.length} className="max-h-[60vh] overflow-y-auto">
             {isLoading && (
-              <div className="flex items-center justify-center px-4 py-12 text-sm text-text-secondary">
+              <div className="flex items-center justify-center px-3 py-12 text-sm text-text-secondary">
                 Loading tags…
               </div>
             )}
 
             {error && !isLoading && (
-              <div className="flex flex-col items-center justify-center gap-2 px-4 py-12 text-center text-sm text-red-500">
+              <div className="flex flex-col items-center justify-center gap-2 px-3 py-12 text-center text-sm text-red-500">
                 <p>Unable to load tags</p>
                 <p className="text-xs text-text-tertiary">{error}</p>
               </div>
             )}
 
             {!isLoading && !error && filteredTags.length === 0 && (
-              <div className="flex items-center justify-center px-4 py-12 text-sm text-text-secondary">
+              <div className="flex items-center justify-center px-3 py-12 text-sm text-text-secondary">
                 No tags match your filters.
               </div>
             )}
@@ -225,7 +225,7 @@ export default function TagsIndexPage() {
                     key={tag.name}
                     role="row"
                     aria-rowindex={index + 1}
-                    className="flex items-center justify-between border-b border-border px-4 py-3 last:border-b-0 hover:bg-surface focus-within:bg-surface transition-colors"
+                    className="flex items-center justify-between border-b border-border px-3 py-3 last:border-b-0 hover:bg-surface focus-within:bg-surface transition-colors"
                   >
                     <div className="flex flex-1 items-center gap-3" role="gridcell">
                       <input
