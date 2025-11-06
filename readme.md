@@ -1,1 +1,3 @@
 # MOZAIQ
+
+mozaiq your list

@@ -1,0 +1,17 @@
+name: Web Config
+version: 1.0.0
+schema: v1
+models: 
+  - name: Llama 3.1 (Ollama)
+    provider: ollama
+    model: llama3.1:8b
+    type: default
+embeddingsProvider:    
+  provider: local
+temperature: 0.2
+contextFiles:
+  - ARCHITECTURE.md
+systemInstructions: |-
+  You are a senior frontend engineer. Keep edits minimal and runnable. Explain diffs briefly.
+allowAnonymousTelemetry: false
+
