@@ -98,9 +98,18 @@ export function EditMediaModal({
       }
     }
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (showDeleteConfirm) return
+      if (event.key === "Escape") {
+        onClose()
+      }
+    }
+
     document.addEventListener("mousedown", handleModalClickOutside)
+    document.addEventListener("keydown", handleKeyDown)
     return () => {
       document.removeEventListener("mousedown", handleModalClickOutside)
+      document.removeEventListener("keydown", handleKeyDown)
     }
   }, [isOpen, onClose, showDeleteConfirm])
 
