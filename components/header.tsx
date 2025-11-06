@@ -35,7 +35,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
   if (!mounted) {
     return (
-      <header className="border-b border-border/30 bg-background/80 backdrop-blur-md sticky top-0 z-40 theme-transition">
+      <header className="bg-background/80 backdrop-blur-md sticky top-0 z-40 theme-transition">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             {onMenuToggle && (
@@ -54,7 +54,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
   }
 
   return (
-    <header className="border-b border-border/30 bg-background/80 backdrop-blur-md sticky top-0 z-40 theme-transition">
+    <header className="bg-background/80 backdrop-blur-md sticky top-0 z-40 theme-transition">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           {onMenuToggle && (
