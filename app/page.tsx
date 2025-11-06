@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
 import { SavedTags } from "@/components/saved-tags"
 import { MediaGrid } from "@/components/media-grid"
 import { AddMediaInput } from "@/components/add-media-input"
 import { EditMediaModal } from "@/components/edit-media-modal"
 import { addMediaItem } from "@/lib/storage"
+import { AppShell } from "@/components/app-shell"
 
 interface NewMediaData {
   url: string
@@ -53,10 +53,8 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen page-gradient theme-transition flex flex-col">
-      <Header />
-
-      <main className="flex-1 flex flex-col">
+    <AppShell>
+      <div className="flex flex-col">
         <section className="hero-section flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl animate-fade-in">
             <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-balance text-foreground">Tag your vibe.</h2>
@@ -76,12 +74,12 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex-1 px-4 sm:px-6 lg:px-8">
+        <div className="flex-1 px-4 sm:px-6 lg:px-8 pb-8">
           <div className="max-w-6xl mx-auto w-full">
             <MediaGrid selectedTags={selectedTags} />
           </div>
         </div>
-      </main>
+      </div>
 
       {newMediaData && (
         <EditMediaModal
@@ -107,6 +105,6 @@ export default function Home() {
           isAddMode={true}
         />
       )}
-    </div>
+    </AppShell>
   )
 }
