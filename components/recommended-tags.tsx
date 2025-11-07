@@ -18,6 +18,15 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
     window.dispatchEvent(event)
   }
 
+  const buildPlaylistUrl = (videos: string[]) => {
+    const ids = videos
+      .map((video) => getYouTubeId(video))
+      .filter((id): id is string => Boolean(id))
+      .join(",")
+    if (!ids) return videos[0]
+    return `https://www.youtube.com/watch_videos?video_ids=${ids}`
+  }
+
   const handleAddRecommended = async (tag: string) => {
     const recommendation = RECOMMENDED_TAGS.find((entry) => entry.tag === tag)
     if (!recommendation) return
@@ -57,6 +66,23 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
     }
   }
 
+  const getYouTubeId = (url: string) => {
+    try {
+      const patterns = [
+        /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+        /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+        /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+      ]
+      for (const pattern of patterns) {
+        const match = url.match(pattern)
+        if (match) return match[1]
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
   return (
     <section className="px-2 py-8 sm:px-3 lg:px-4">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -69,17 +95,26 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
           {RECOMMENDED_TAGS.map((recommendation) => {
             const isSaving = savingTag === recommendation.tag
             const isCompleted = completedTags.includes(recommendation.tag)
+            const coverId = getYouTubeId(recommendation.videos[0])
+            const coverImage = coverId ? `https://img.youtube.com/vi/${coverId}/hqdefault.jpg` : null
 
             return (
-              <div
+              <a
                 key={recommendation.tag}
-                className="group relative flex aspect-square flex-col justify-between rounded-2xl border border-border bg-background/80 p-4 shadow-sm transition-colors hover:border-accent hover:bg-background"
+                href={buildPlaylistUrl(recommendation.videos)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative flex aspect-square flex-col rounded-2xl border border-border bg-background/80 p-4 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-lg font-semibold text-foreground">{recommendation.tag}</h3>
                   <button
                     type="button"
-                    onClick={() => handleAddRecommended(recommendation.tag)}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      handleAddRecommended(recommendation.tag)
+                    }}
                     disabled={isSaving || isCompleted}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:border-border/60 disabled:text-text-tertiary"
                     aria-label={`${recommendation.tag} 태그 추천을 추가`}
@@ -93,24 +128,28 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
                     )}
                   </button>
                 </div>
-                <ul className="space-y-2 text-xs text-text-secondary">
-                  {recommendation.videos.map((videoUrl, index) => (
-                    <li key={videoUrl} className="flex items-center gap-2 rounded-lg bg-surface/60 p-2">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[11px] font-semibold text-accent">
-                        {index + 1}
-                      </span>
-                      <a
-                        className="truncate transition-colors hover:text-accent"
-                        href={videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {videoUrl.replace("https://", "").split("?")[0]}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                <div className="mt-3 flex-1 space-y-3">
+                  <div className="relative aspect-square overflow-hidden rounded-2xl">
+                    {coverImage ? (
+                      <img
+                        src={coverImage}
+                        alt={`${recommendation.tag} 추천 썸네일`}
+                        className="w-full aspect-square object-cover rounded-xl group-hover:scale-105 transition-transform duration-300"
+                        // className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-xs text-text-tertiary">
+                        Preview unavailable
+                      </div>
+                    )}
+                  </div>
+
+                  {/* <div className="rounded-xl bg-surface/60 px-4 py-3 text-sm">
+                    <p className="font-medium text-text-secondary">추천 트랙 {recommendation.videos.length}곡</p>
+                    <p className="text-xs text-text-tertiary">카드를 클릭하면 익명 재생 목록이 열립니다.</p>
+                  </div> */}
+                </div>
+              </a>
             )
           })}
         </div>
