@@ -2,6 +2,7 @@
 
 import type React from "react"
 
+import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTagAutocomplete } from "@/hooks/use-tag-autocomplete"
@@ -272,6 +273,16 @@ export function EditMediaModal({
                   </button>
                 </div>
               )}
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-text-secondary">
+              <span>Bulk rename, merge, or delete lives in the tag manager.</span>
+              <Link
+                href="/tags"
+                className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 font-medium text-foreground transition-colors hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                Open /tags
+              </Link>
             </div>
           </div>
 
