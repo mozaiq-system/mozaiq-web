@@ -96,7 +96,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
             const isSaving = savingTag === recommendation.tag
             const isCompleted = completedTags.includes(recommendation.tag)
             const coverId = getYouTubeId(recommendation.videos[0])
-            const coverImage = coverId ? `https://img.youtube.com/vi/${coverId}/hqdefault.jpg` : null
+            const coverImage = coverId ? `https://i.ytimg.com/vi/${coverId}/hq720.jpg` : null
 
             return (
               <a
@@ -134,8 +134,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
                       <img
                         src={coverImage}
                         alt={`${recommendation.tag} 추천 썸네일`}
-                        className="w-full aspect-square object-cover rounded-xl group-hover:scale-105 transition-transform duration-300"
-                        // className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="h-full w-full rounded-2xl object-cover object-center transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-xs text-text-tertiary">
