@@ -7,6 +7,7 @@ import { AddMediaInput } from "@/components/add-media-input"
 import { EditMediaModal } from "@/components/edit-media-modal"
 import { addMediaItem } from "@/lib/storage"
 import { AppShell } from "@/components/app-shell"
+import { RecommendedTags } from "@/components/recommended-tags"
 
 interface NewMediaData {
   url: string
@@ -20,6 +21,7 @@ export default function Home() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [newMediaData, setNewMediaData] = useState<NewMediaData | null>(null)
   const [newMediaThumbnail, setNewMediaThumbnail] = useState("")
+  const [savedTagsVersion, setSavedTagsVersion] = useState(0)
 
   useEffect(() => {
     setMounted(true)
@@ -39,6 +41,10 @@ export default function Home() {
     setShowAddModal(true)
   }
 
+  const handleRecommendedUpdate = () => {
+    setSavedTagsVersion((prev) => prev + 1)
+  }
+
   const handleSaveNewMedia = async (item: any) => {
     await addMediaItem({
       url: newMediaData!.url,
@@ -55,27 +61,24 @@ export default function Home() {
   return (
     <AppShell>
       <div className="flex flex-col">
-        <section className="hero-section flex flex-col items-center justify-center px-2 sm:px-3 lg:px-4">
-          <div className="text-center max-w-2xl animate-fade-in">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-balance text-foreground">Tag your vibe.</h2>
-            <p className="text-text-secondary text-lg text-pretty">Build playlists that match your mood and moments.</p>
-          </div>
+        <RecommendedTags onLibraryUpdate={handleRecommendedUpdate} />
 
-          <div className="w-full max-w-2xl mt-8">
+        <section className="px-2 sm:px-3 lg:px-4">
+          <div className="mx-auto w-full max-w-3xl">
             <AddMediaInput onModalOpen={handleAddMediaOpen} />
           </div>
         </section>
 
         <div className="px-2 sm:px-3 lg:px-4 mb-4 sm:mb-4">
-          <div className="max-w-6xl mx-auto w-full">
+          <div className="max-w-7xl mx-auto w-full">
             <div className="flex flex-wrap gap-2 justify-start items-center">
-              <SavedTags onTagsSelect={handleSavedTagsSelect} />
+              <SavedTags onTagsSelect={handleSavedTagsSelect} refreshToken={savedTagsVersion.toString()} />
             </div>
           </div>
         </div>
 
         <div className="flex-1 px-2 sm:px-3 lg:px-4 pb-8">
-          <div className="max-w-6xl mx-auto w-full">
+          <div className="max-w-7xl mx-auto w-full">
             <MediaGrid selectedTags={selectedTags} />
           </div>
         </div>

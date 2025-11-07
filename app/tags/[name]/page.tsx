@@ -266,7 +266,7 @@ export default function TagDetailPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-2 py-8 sm:px-3 lg:px-4">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-2 py-8 sm:px-3 lg:px-4">
         <header className="rounded-xl border border-border bg-background/80 px-3 py-4 shadow-sm backdrop-blur sm:px-4">
           <p className="text-sm uppercase tracking-wide text-text-tertiary">Tag detail</p>
           <h1 className="text-2xl font-semibold leading-tight text-balance">{tagName || "Unknown tag"}</h1>
