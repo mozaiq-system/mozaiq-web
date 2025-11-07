@@ -13,6 +13,7 @@ interface MediaItem {
 
 interface SavedTagsProps {
   onTagsSelect: (tags: string[]) => void
+  refreshToken?: string
 }
 
 function extractUniqueTags(items: MediaItem[]): string[] {
@@ -23,18 +24,21 @@ function extractUniqueTags(items: MediaItem[]): string[] {
   return Array.from(tags).sort()
 }
 
-export function SavedTags({ onTagsSelect }: SavedTagsProps) {
+export function SavedTags({ onTagsSelect, refreshToken }: SavedTagsProps) {
   const [tags, setTags] = useState<string[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  useEffect(() => {
     loadMediaItems().then((items) => {
       const uniqueTags = extractUniqueTags(items as any)
       setTags(uniqueTags)
     })
-  }, [])
+  }, [refreshToken])
 
   if (!mounted || tags.length === 0) return null
 
