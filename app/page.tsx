@@ -64,13 +64,13 @@ export default function Home() {
         <RecommendedTags onLibraryUpdate={handleRecommendedUpdate} />
 
         <section className="px-2 sm:px-3 lg:px-4">
-          <div className="mx-auto w-full max-w-2xl">
+          <div className="mx-auto w-full max-w-3xl">
             <AddMediaInput onModalOpen={handleAddMediaOpen} />
           </div>
         </section>
 
         <div className="px-2 sm:px-3 lg:px-4 mb-4 sm:mb-4">
-          <div className="max-w-6xl mx-auto w-full">
+          <div className="max-w-7xl mx-auto w-full">
             <div className="flex flex-wrap gap-2 justify-start items-center">
               <SavedTags onTagsSelect={handleSavedTagsSelect} refreshToken={savedTagsVersion.toString()} />
             </div>
@@ -78,7 +78,7 @@ export default function Home() {
         </div>
 
         <div className="flex-1 px-2 sm:px-3 lg:px-4 pb-8">
-          <div className="max-w-6xl mx-auto w-full">
+          <div className="max-w-7xl mx-auto w-full">
             <MediaGrid selectedTags={selectedTags} />
           </div>
         </div>

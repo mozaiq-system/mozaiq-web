@@ -103,7 +103,7 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="min-h-screen page-gradient bg-gradient-to-b from-background to-surface text-foreground theme-transition">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl px-0">
+      <div className="mx-auto flex min-h-screen w-full max-w-screen-2xl px-0">
         <aside className="hidden shrink-0 bg-background/80 pr-3 pt-6 md:flex md:w-56 md:flex-col md:gap-4 md:pl-3 md:backdrop-blur">
           <nav aria-label="Primary" className="flex flex-col gap-1">
             {renderNavLinks()}

@@ -85,7 +85,7 @@ export default function TagsIndexPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-2 py-8 sm:px-3 lg:px-4">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-2 py-8 sm:px-3 lg:px-4">
         <header className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background/80 px-3 py-4 shadow-sm backdrop-blur sm:px-4">
           <div>
             <p className="text-sm uppercase tracking-wide text-text-tertiary">Tag Control</p>
