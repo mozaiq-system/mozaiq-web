@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Check, Loader2, Plus } from "lucide-react"
 import { addMediaItem, loadMediaItems } from "@/lib/storage"
 import { RECOMMENDED_TAGS } from "@/data/recommended-tags"
+import { fetchYouTubeMetadata } from "@/lib/youtube-utils"
 
 interface RecommendedTagsProps {
   onLibraryUpdate?: (tag: string) => void
@@ -44,15 +45,25 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         return
       }
 
+      const metadataByUrl = new Map<string, Awaited<ReturnType<typeof fetchYouTubeMetadata>>>()
       await Promise.all(
-        urlsToAdd.map((url, index) =>
-          addMediaItem({
+        urlsToAdd.map(async (url) => {
+          const metadata = await fetchYouTubeMetadata(url)
+          metadataByUrl.set(url, metadata)
+        }),
+      )
+
+      await Promise.all(
+        urlsToAdd.map((url, index) => {
+          const metadata = metadataByUrl.get(url)
+          return addMediaItem({
             url,
             tags: [tag],
-            title: `${tag} 추천 트랙 ${index + 1}`,
-            channel: "MOZAIQ Recommend",
-          }),
-        ),
+            title: metadata?.title ?? `${tag} 추천 트랙 ${index + 1}`,
+            channel: metadata?.author_name ?? "MOZAIQ Recommend",
+            thumbnail: metadata?.thumbnail_url,
+          })
+        }),
       )
 
       showToast(`${tag} 태그와 플레이리스트를 라이브러리에 추가했어요.`)
