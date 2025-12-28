@@ -33,6 +33,11 @@ export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const drawerRef = useRef<HTMLDivElement>(null)
+  const navLinks = navItems.map((item) => ({
+    label: item.label,
+    href: item.href,
+    isActive: item.match(pathname ?? "/"),
+  }))
 
   useEffect(() => {
     if (!drawerOpen) return
@@ -81,37 +86,28 @@ export function AppShell({ children }: AppShellProps) {
   }, [pathname])
 
   const renderNavLinks = (onNavigate?: () => void) =>
-    navItems.map((item) => {
-      const isActive = item.match(pathname ?? "/")
-      return (
-        <Link
-          key={item.href}
-          href={item.href}
-          onClick={onNavigate}
-          className={cn(
-            "group flex items-center rounded-lg py-2 pr-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--accent-color,#6C4AFF)]",
-            isActive
-              ? "border-l-4 border-l-[color:var(--accent-color,#6C4AFF)] bg-[rgba(108,74,255,0.12)] pl-2 text-[color:var(--accent-color,#6C4AFF)]"
-              : "border-l-4 border-l-transparent pl-3 text-text-secondary hover:bg-surface hover:text-foreground",
-          )}
-          aria-current={isActive ? "page" : undefined}
-        >
-          {item.label}
-        </Link>
-      )
-    })
+    navLinks.map((item) => (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={onNavigate}
+        className={cn(
+          "group flex items-center rounded-lg py-2 pr-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--accent-color,#6C4AFF)]",
+          item.isActive
+            ? "border-l-4 border-l-[color:var(--accent-color,#6C4AFF)] bg-[rgba(108,74,255,0.12)] pl-2 text-[color:var(--accent-color,#6C4AFF)]"
+            : "border-l-4 border-l-transparent pl-3 text-text-secondary hover:bg-surface hover:text-foreground",
+        )}
+        aria-current={item.isActive ? "page" : undefined}
+      >
+        {item.label}
+      </Link>
+    ))
 
   return (
     <div className="min-h-screen page-gradient bg-gradient-to-b from-background to-surface text-foreground theme-transition">
-      <div className="mx-auto flex min-h-screen w-full max-w-screen-2xl px-0">
-        <aside className="hidden shrink-0 bg-background/80 pr-3 pt-6 md:flex md:w-56 md:flex-col md:gap-4 md:pl-3 md:backdrop-blur">
-          <nav aria-label="Primary" className="flex flex-col gap-1">
-            {renderNavLinks()}
-          </nav>
-        </aside>
-
-        <div className="flex min-h-screen flex-1 flex-col">
-          <Header onMenuToggle={() => setDrawerOpen(true)} />
+      <div className="mx-auto min-h-screen w-full max-w-screen-2xl px-0">
+        <div className="flex min-h-screen flex-col">
+          <Header onMenuToggle={() => setDrawerOpen(true)} navItems={navLinks} />
           <main className="flex-1 overflow-x-hidden">{children}</main>
         </div>
       </div>

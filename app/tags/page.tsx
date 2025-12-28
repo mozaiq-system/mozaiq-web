@@ -1,13 +1,15 @@
 "use client"
 
-import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
+import { loadMediaItems } from "@/lib/storage"
 import { getTagSummaries, type TagSummary } from "@/lib/tag-service"
 import { AppShell } from "@/components/app-shell"
 
 type SortOption = "frequency" | "alphabetical"
 
 export default function TagsIndexPage() {
+  const router = useRouter()
   const [tagSummaries, setTagSummaries] = useState<TagSummary[]>([])
   const [filteredTags, setFilteredTags] = useState<TagSummary[]>([])
   const [search, setSearch] = useState("")
@@ -15,6 +17,7 @@ export default function TagsIndexPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [tagSamples, setTagSamples] = useState<Record<string, { thumbnail?: string; title?: string }>>({})
 
   useEffect(() => {
     let mounted = true
@@ -22,8 +25,18 @@ export default function TagsIndexPage() {
       try {
         setIsLoading(true)
         const summaries = await getTagSummaries()
+        const mediaItems = await loadMediaItems()
+        const samples: Record<string, { thumbnail?: string; title?: string }> = {}
+        for (const item of mediaItems) {
+          for (const tag of item.tags) {
+            if (!samples[tag]) {
+              samples[tag] = { thumbnail: item.thumbnail, title: item.title ?? item.channel ?? "Untitled track" }
+            }
+          }
+        }
         if (!mounted) return
         setTagSummaries(summaries)
+        setTagSamples(samples)
       } catch (err) {
         if (!mounted) return
         setError(err instanceof Error ? err.message : "Failed to load tags")
@@ -194,22 +207,22 @@ export default function TagsIndexPage() {
             </p>
           </header>
 
-          <div role="grid" aria-rowcount={filteredTags.length} className="max-h-[60vh] overflow-y-auto">
+          <div className="grid max-h-[60vh] grid-cols-2 gap-4 overflow-y-auto px-3 py-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {isLoading && (
-              <div className="flex items-center justify-center px-3 py-12 text-sm text-text-secondary">
+              <div className="col-span-full flex items-center justify-center py-12 text-sm text-text-secondary">
                 Loading tags…
               </div>
             )}
 
             {error && !isLoading && (
-              <div className="flex flex-col items-center justify-center gap-2 px-3 py-12 text-center text-sm text-red-500">
+              <div className="col-span-full flex flex-col items-center justify-center gap-2 py-12 text-center text-sm text-red-500">
                 <p>Unable to load tags</p>
                 <p className="text-xs text-text-tertiary">{error}</p>
               </div>
             )}
 
             {!isLoading && !error && filteredTags.length === 0 && (
-              <div className="flex items-center justify-center px-3 py-12 text-sm text-text-secondary">
+              <div className="col-span-full flex items-center justify-center py-12 text-sm text-text-secondary">
                 No tags match your filters.
               </div>
             )}
@@ -219,39 +232,60 @@ export default function TagsIndexPage() {
               filteredTags.map((tag, index) => {
                 const isChecked = selected.includes(tag.name)
                 const rowId = `tag-row-${tag.name}`
+                const sample = tagSamples[tag.name] ?? {}
 
                 return (
-                  <div
+                  <button
                     key={tag.name}
-                    role="row"
-                    aria-rowindex={index + 1}
-                    className="flex items-center justify-between border-b border-border px-3 py-3 last:border-b-0 hover:bg-surface focus-within:bg-surface transition-colors"
+                    type="button"
+                    aria-label={`Open ${tag.name} detail`}
+                    onClick={() => router.push(`/tags/${encodeURIComponent(tag.name)}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        router.push(`/tags/${encodeURIComponent(tag.name)}`)
+                      }
+                    }}
+                    className="group flex flex-col rounded-2xl border border-border bg-background/70 p-4 text-left shadow-sm transition-colors hover:border-accent hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   >
-                    <div className="flex flex-1 items-center gap-3" role="gridcell">
+                    <div className="relative aspect-square overflow-hidden rounded-xl bg-surface">
+                      {sample.thumbnail ? (
+                        <img
+                          src={sample.thumbnail}
+                          alt=""
+                          className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xs text-text-tertiary">
+                          No cover yet
+                        </div>
+                      )}
                       <input
                         id={`${rowId}-checkbox`}
                         type="checkbox"
                         checked={isChecked}
-                        onChange={() => toggleTag(tag.name)}
-                        className="h-4 w-4 rounded border-border text-accent focus:ring-accent-light"
+                        onChange={(event) => {
+                          event.stopPropagation()
+                          toggleTag(tag.name)
+                        }}
+                        className="absolute left-3 top-3 h-4 w-4 rounded border-border bg-background/80 text-accent focus:ring-accent-light"
                         aria-labelledby={`${rowId}-label`}
                       />
-                      <div className="flex flex-col">
-                        <span id={`${rowId}-label`} className="text-sm font-medium">
-                          {tag.name}
-                        </span>
-                        <span className="text-xs text-text-secondary">{tag.count} items</span>
-                      </div>
                     </div>
-                    <div role="gridcell" className="flex items-center gap-3">
-                      <Link
-                        href={`/tags/${encodeURIComponent(tag.name)}`}
-                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                      >
-                        Open detail
-                      </Link>
+
+                    <div className="mt-4 flex flex-col gap-1">
+                      <span id={`${rowId}-label`} className="text-base font-semibold">
+                        {tag.name}
+                      </span>
+                      <p className="text-sm text-text-secondary">
+                        {sample.title ? sample.title : "아직 소개 문구가 없어요."}
+                      </p>
                     </div>
-                  </div>
+
+                    <div className="mt-auto pt-3 text-xs font-semibold text-text-tertiary">
+                      {tag.count} tracks tagged
+                    </div>
+                  </button>
                 )
               })}
           </div>

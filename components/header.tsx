@@ -3,13 +3,16 @@
 import { useEffect, useState } from "react"
 import { Menu, Moon, Sun } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { ProfileAvatar } from "./profile-avatar"
+import { cn } from "@/lib/utils"
 
 interface HeaderProps {
   onMenuToggle?: () => void
+  navItems?: Array<{ label: string; href: string; isActive: boolean }>
 }
 
-export function Header({ onMenuToggle }: HeaderProps) {
+export function Header({ onMenuToggle, navItems = [] }: HeaderProps) {
   const [isDark, setIsDark] = useState(false)
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
@@ -44,6 +47,11 @@ export function Header({ onMenuToggle }: HeaderProps) {
             <div className="w-8 h-8 rounded-lg bg-border/60" />
             <div className="h-5 w-24 rounded bg-border/40" />
           </div>
+          {navItems.length > 0 && (
+            <div className="hidden flex-1 items-center justify-center px-4 md:flex">
+              <span className="h-9 w-40 rounded-full border border-border bg-border/20" />
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <span className="h-10 w-10 rounded-lg bg-border/40" />
             <span className="h-10 w-10 rounded-full bg-border/40" />
@@ -77,6 +85,27 @@ export function Header({ onMenuToggle }: HeaderProps) {
             <h1 className="text-xl font-bold tracking-tight">MOZAIQ</h1>
           </div>
         </div>
+
+        {navItems.length > 0 && (
+          <nav className="hidden flex-1 items-center justify-center gap-1 px-4 md:flex">
+            <div className="inline-flex items-center gap-1 rounded-full border border-border bg-background/90 px-1 py-1 shadow-sm">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                    item.isActive
+                      ? "bg-[color:var(--accent-color,#6C4AFF)] text-white shadow-sm"
+                      : "text-text-secondary hover:text-foreground",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
 
         <div className="flex items-center gap-2">
           <button
