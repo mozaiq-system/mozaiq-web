@@ -46,11 +46,13 @@ export default function Home() {
   }
 
   const handleSaveNewMedia = async (item: any) => {
+    const fallbackTitle = newMediaData!.title
+    const fallbackChannel = newMediaData!.author_name
     await addMediaItem({
       url: newMediaData!.url,
       tags: item.tags,
-      title: newMediaData!.title,
-      channel: newMediaData!.author_name,
+      title: item.title ?? fallbackTitle,
+      channel: item.channel ?? fallbackChannel,
       thumbnail: newMediaThumbnail,
     })
     setShowAddModal(false)

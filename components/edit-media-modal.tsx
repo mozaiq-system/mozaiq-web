@@ -5,6 +5,7 @@ import type React from "react"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { Check, Pencil } from "lucide-react"
 import { useTagAutocomplete } from "@/hooks/use-tag-autocomplete"
 import { cn } from "@/lib/utils"
 
@@ -61,6 +62,9 @@ export function EditMediaModal({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isComposing, setIsComposing] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false)
+  const [titleValue, setTitleValue] = useState("")
+  const [channelValue, setChannelValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   const inputContainerRef = useRef<HTMLDivElement>(null)
   const modalContentRef = useRef<HTMLDivElement>(null)
@@ -73,6 +77,12 @@ export function EditMediaModal({
       setTagInput("")
     }
   }, [item, isOpen])
+
+  useEffect(() => {
+    setTitleValue(item?.title ?? metadata?.title ?? "")
+    setChannelValue(item?.channel ?? metadata?.author_name ?? "")
+    setIsEditingMetadata(false)
+  }, [item, metadata, isOpen])
 
   useEffect(() => {
     handleInputChange(tagInput)
@@ -207,7 +217,14 @@ export function EditMediaModal({
   }
 
   const handleSave = () => {
-    const updatedItem = { ...item, tags: editedTags }
+    const normalizedTitle = titleValue.trim()
+    const normalizedChannel = channelValue.trim()
+    const updatedItem = {
+      ...item,
+      tags: editedTags,
+      title: normalizedTitle || undefined,
+      channel: normalizedChannel || undefined,
+    }
     onSave(updatedItem)
     onClose()
     showToast(isAddMode ? "Track saved locally!" : "Changes saved locally!")
@@ -244,12 +261,43 @@ export function EditMediaModal({
             <div className="w-full aspect-video rounded-lg overflow-hidden mb-4">
               <img src={thumbnail || "/placeholder.svg"} alt="Video thumbnail" className="w-full h-full object-cover" />
             </div>
-            {metadata && (
-              <div>
-                <h3 className="font-semibold text-lg line-clamp-2">{metadata.title}</h3>
-                <p className="text-sm text-text-secondary mt-1">{metadata.author_name}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                {isEditingMetadata ? (
+                  <div className="space-y-2">
+                    <input
+                      value={titleValue}
+                      onChange={(event) => setTitleValue(event.target.value)}
+                      placeholder="Video title"
+                      className="input-field w-full"
+                    />
+                    <input
+                      value={channelValue}
+                      onChange={(event) => setChannelValue(event.target.value)}
+                      placeholder="Channel / author"
+                      className="input-field w-full"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="font-semibold text-lg line-clamp-2">
+                      {titleValue || metadata?.title || "Untitled video"}
+                    </h3>
+                    <p className="text-sm text-text-secondary mt-1">
+                      {channelValue || metadata?.author_name || "Unknown channel"}
+                    </p>
+                  </>
+                )}
               </div>
-            )}
+              <button
+                type="button"
+                onClick={() => setIsEditingMetadata((prev) => !prev)}
+                className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-border text-text-secondary transition-colors hover:bg-surface"
+                aria-label={isEditingMetadata ? "Confirm metadata edits" : "Edit metadata"}
+              >
+                {isEditingMetadata ? <Check className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
 
           <div className="mb-6">
