@@ -66,7 +66,7 @@ export function AddMediaInput({ onModalOpen }: AddMediaInputProps) {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Paste a YouTube link to add…"
+        placeholder="Paste a YouTube link to add"
         disabled={isLoading}
         className="input-field w-full"
       />
