@@ -60,7 +60,7 @@ export default function Home() {
 
   return (
     <AppShell>
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-6 sm:gap-8">
         <RecommendedTags onLibraryUpdate={handleRecommendedUpdate} />
 
         <section className="px-2 sm:px-3 lg:px-4">
@@ -69,7 +69,7 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="px-2 sm:px-3 lg:px-4 mb-4 sm:mb-4">
+        <div className="px-2 sm:px-3 lg:px-4">
           <div className="max-w-7xl mx-auto w-full">
             <div className="flex flex-wrap gap-2 justify-start items-center">
               <SavedTags onTagsSelect={handleSavedTagsSelect} refreshToken={savedTagsVersion.toString()} />
