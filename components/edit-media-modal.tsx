@@ -5,7 +5,9 @@ import type React from "react"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { Check, Pencil } from "lucide-react"
 import { useTagAutocomplete } from "@/hooks/use-tag-autocomplete"
+import { cn } from "@/lib/utils"
 
 interface MediaItem {
   id: string
@@ -59,6 +61,10 @@ export function EditMediaModal({
   const [tagInput, setTagInput] = useState("")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isComposing, setIsComposing] = useState(false)
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false)
+  const [titleValue, setTitleValue] = useState("")
+  const [channelValue, setChannelValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   const inputContainerRef = useRef<HTMLDivElement>(null)
   const modalContentRef = useRef<HTMLDivElement>(null)
@@ -71,6 +77,12 @@ export function EditMediaModal({
       setTagInput("")
     }
   }, [item, isOpen])
+
+  useEffect(() => {
+    setTitleValue(item?.title ?? metadata?.title ?? "")
+    setChannelValue(item?.channel ?? metadata?.author_name ?? "")
+    setIsEditingMetadata(false)
+  }, [item, metadata, isOpen])
 
   useEffect(() => {
     handleInputChange(tagInput)
@@ -88,6 +100,14 @@ export function EditMediaModal({
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [closeSuggestions])
+
+  useEffect(() => {
+    if (!showSuggestions || suggestions.length === 0) {
+      setHighlightedIndex(-1)
+      return
+    }
+    setHighlightedIndex(0)
+  }, [showSuggestions, suggestions])
 
   useEffect(() => {
     if (!isOpen) return
@@ -124,17 +144,23 @@ export function EditMediaModal({
     // Truncate to 24 chars and add ellipsis if needed
     const finalTag = trimmedTag.length > 24 ? trimmedTag.substring(0, 24) + "…" : trimmedTag
 
-    // Check for duplicates (case-insensitive)
-    const isDuplicate = editedTags.some((t) => t.toLowerCase() === finalTag.toLowerCase())
+    let duplicate = false
+    setEditedTags((previous) => {
+      const isDuplicate = previous.some((t) => t.toLowerCase() === finalTag.toLowerCase())
+      if (isDuplicate) {
+        showToast("Tag already exists")
+        duplicate = true
+        return previous
+      }
+      return [...previous, finalTag]
+    })
 
-    if (isDuplicate) {
-      showToast("Tag already exists")
+    if (duplicate) {
       return
     }
 
-    // Add to local state
-    setEditedTags([...editedTags, finalTag])
     setTagInput("")
+    setHighlightedIndex(-1)
     closeSuggestions()
   }
 
@@ -145,9 +171,37 @@ export function EditMediaModal({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (isComposing) return
 
+    if (e.key === "ArrowDown") {
+      if (!showSuggestions) {
+        openSuggestions()
+      }
+      e.preventDefault()
+      if (suggestions.length > 0) {
+        setHighlightedIndex((prev) => {
+          if (prev === -1) return 0
+          const next = prev + 1
+          return next >= suggestions.length ? 0 : next
+        })
+      }
+      return
+    }
+
+    if (e.key === "ArrowUp" && showSuggestions && suggestions.length > 0) {
+      e.preventDefault()
+      setHighlightedIndex((prev) => {
+        if (prev <= 0) return suggestions.length - 1
+        return prev - 1
+      })
+      return
+    }
+
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault()
-      handleAddTag(tagInput)
+      if (showSuggestions && highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+        handleAddTag(suggestions[highlightedIndex])
+      } else {
+        handleAddTag(tagInput)
+      }
     }
 
     if (e.key === "Backspace" && tagInput === "") {
@@ -163,7 +217,14 @@ export function EditMediaModal({
   }
 
   const handleSave = () => {
-    const updatedItem = { ...item, tags: editedTags }
+    const normalizedTitle = titleValue.trim()
+    const normalizedChannel = channelValue.trim()
+    const updatedItem = {
+      ...item,
+      tags: editedTags,
+      title: normalizedTitle || undefined,
+      channel: normalizedChannel || undefined,
+    }
     onSave(updatedItem)
     onClose()
     showToast(isAddMode ? "Track saved locally!" : "Changes saved locally!")
@@ -200,12 +261,43 @@ export function EditMediaModal({
             <div className="w-full aspect-video rounded-lg overflow-hidden mb-4">
               <img src={thumbnail || "/placeholder.svg"} alt="Video thumbnail" className="w-full h-full object-cover" />
             </div>
-            {metadata && (
-              <div>
-                <h3 className="font-semibold text-lg line-clamp-2">{metadata.title}</h3>
-                <p className="text-sm text-text-secondary mt-1">{metadata.author_name}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                {isEditingMetadata ? (
+                  <div className="space-y-2">
+                    <input
+                      value={titleValue}
+                      onChange={(event) => setTitleValue(event.target.value)}
+                      placeholder="Video title"
+                      className="input-field w-full"
+                    />
+                    <input
+                      value={channelValue}
+                      onChange={(event) => setChannelValue(event.target.value)}
+                      placeholder="Channel / author"
+                      className="input-field w-full"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="font-semibold text-lg line-clamp-2">
+                      {titleValue || metadata?.title || "Untitled video"}
+                    </h3>
+                    <p className="text-sm text-text-secondary mt-1">
+                      {channelValue || metadata?.author_name || "Unknown channel"}
+                    </p>
+                  </>
+                )}
               </div>
-            )}
+              <button
+                type="button"
+                onClick={() => setIsEditingMetadata((prev) => !prev)}
+                className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-border text-text-secondary transition-colors hover:bg-surface"
+                aria-label={isEditingMetadata ? "Confirm metadata edits" : "Edit metadata"}
+              >
+                {isEditingMetadata ? <Check className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
 
           <div className="mb-6">
@@ -255,8 +347,17 @@ export function EditMediaModal({
 
               {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto tag-suggestions-list">
-                  {suggestions.map((suggestion) => (
-                    <button key={suggestion} onClick={() => handleAddTag(suggestion)} className="tag-suggestion-item">
+                  {suggestions.map((suggestion, index) => (
+                    <button
+                      key={suggestion}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                      onClick={() => handleAddTag(suggestion)}
+                      className={cn(
+                        "tag-suggestion-item",
+                        highlightedIndex === index && "bg-accent/10 text-foreground",
+                      )}
+                    >
                       {suggestion}
                     </button>
                   ))}
@@ -266,6 +367,7 @@ export function EditMediaModal({
               {showSuggestions && tagInput.trim() && suggestions.length === 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-10 p-3">
                   <button
+                    onMouseDown={(event) => event.preventDefault()}
                     onClick={() => handleAddTag(tagInput)}
                     className="w-full text-left text-sm text-text-secondary hover:text-foreground transition-colors"
                   >
@@ -275,15 +377,6 @@ export function EditMediaModal({
               )}
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-text-secondary">
-              <span>Bulk rename, merge, or delete lives in the tag manager.</span>
-              <Link
-                href="/tags"
-                className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 font-medium text-foreground transition-colors hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                Open /tags
-              </Link>
-            </div>
           </div>
 
           <div className="flex gap-3 justify-end">

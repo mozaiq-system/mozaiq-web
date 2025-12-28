@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { loadMediaItems, saveMediaItems, getVideoMetadataCache, setVideoMetadataCache } from "@/lib/storage"
+import { loadMediaItems, saveMediaItems } from "@/lib/storage"
 import { EditMediaModal } from "./edit-media-modal"
 
 interface MediaItem {
@@ -36,55 +36,11 @@ function getYouTubeThumbnail(videoId: string): string {
   return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
 }
 
-async function getVideoMetadata(videoId: string): Promise<VideoMetadata> {
-  if (typeof window !== "undefined") {
-    const cached = await getVideoMetadataCache(videoId)
-    if (cached) {
-      return cached
-    }
-  }
-
-  try {
-    // Fetch from YouTube oEmbed endpoint
-    const response = await fetch(
-      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
-    )
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch metadata")
-    }
-
-    const data = await response.json()
-    const metadata: VideoMetadata = {
-      title: data.title || "Untitled Video",
-      author_name: data.author_name || "Unknown Channel",
-    }
-
-    if (typeof window !== "undefined") {
-      await setVideoMetadataCache(videoId, metadata)
-    }
-
-    return metadata
-  } catch {
-    return {
-      title: "Untitled Video",
-      author_name: "Unknown Channel",
-    }
-  }
-}
-
 function MediaCard({ item, index, onEdit }: { item: MediaItem; index: number; onEdit: (item: MediaItem) => void }) {
-  const [metadata, setMetadata] = useState<VideoMetadata | null>(null)
-
-  useEffect(() => {
-    const videoId = extractYouTubeId(item.url)
-    if (videoId) {
-      getVideoMetadata(videoId).then(setMetadata)
-    }
-  }, [item.url])
-
   const videoId = extractYouTubeId(item.url)
   const thumbnail = videoId ? getYouTubeThumbnail(videoId) : "/placeholder.svg"
+  const displayTitle = item.title || "Untitled Video"
+  const displayChannel = item.channel || "Unknown Channel"
 
   return (
     <motion.div
@@ -110,17 +66,8 @@ function MediaCard({ item, index, onEdit }: { item: MediaItem; index: number; on
 
           <div className="flex-1 flex flex-col justify-between">
             <div>
-              {metadata ? (
-                <>
-                  <h3 className="font-semibold text-base line-clamp-2">{metadata.title}</h3>
-                  <p className="text-sm text-text-secondary mt-1 line-clamp-1">{metadata.author_name}</p>
-                </>
-              ) : (
-                <>
-                  <div className="h-5 bg-surface rounded animate-pulse mb-1" />
-                  <div className="h-4 bg-surface rounded w-2/3 animate-pulse" />
-                </>
-              )}
+              <h3 className="font-semibold text-base line-clamp-2">{displayTitle}</h3>
+              <p className="text-sm text-text-secondary mt-1 line-clamp-1">{displayChannel}</p>
             </div>
 
             <div className="flex flex-wrap gap-1">
@@ -238,10 +185,10 @@ export function MediaGrid({ selectedTags }: MediaGridProps) {
 
   const handleEditItem = (item: MediaItem) => {
     setEditingItem(item)
-    const videoId = extractYouTubeId(item.url)
-    if (videoId) {
-      getVideoMetadata(videoId).then(setEditingMetadata)
-    }
+    setEditingMetadata({
+      title: item.title || "Untitled Video",
+      author_name: item.channel || "Unknown Channel",
+    })
   }
 
   const handleSaveEditedItem = (updatedItem: MediaItem) => {
