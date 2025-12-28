@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTagAutocomplete } from "@/hooks/use-tag-autocomplete"
+import { cn } from "@/lib/utils"
 
 interface MediaItem {
   id: string
@@ -59,6 +60,7 @@ export function EditMediaModal({
   const [tagInput, setTagInput] = useState("")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isComposing, setIsComposing] = useState(false)
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
   const inputContainerRef = useRef<HTMLDivElement>(null)
   const modalContentRef = useRef<HTMLDivElement>(null)
@@ -88,6 +90,14 @@ export function EditMediaModal({
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [closeSuggestions])
+
+  useEffect(() => {
+    if (!showSuggestions || suggestions.length === 0) {
+      setHighlightedIndex(-1)
+      return
+    }
+    setHighlightedIndex(0)
+  }, [showSuggestions, suggestions])
 
   useEffect(() => {
     if (!isOpen) return
@@ -124,17 +134,23 @@ export function EditMediaModal({
     // Truncate to 24 chars and add ellipsis if needed
     const finalTag = trimmedTag.length > 24 ? trimmedTag.substring(0, 24) + "…" : trimmedTag
 
-    // Check for duplicates (case-insensitive)
-    const isDuplicate = editedTags.some((t) => t.toLowerCase() === finalTag.toLowerCase())
+    let duplicate = false
+    setEditedTags((previous) => {
+      const isDuplicate = previous.some((t) => t.toLowerCase() === finalTag.toLowerCase())
+      if (isDuplicate) {
+        showToast("Tag already exists")
+        duplicate = true
+        return previous
+      }
+      return [...previous, finalTag]
+    })
 
-    if (isDuplicate) {
-      showToast("Tag already exists")
+    if (duplicate) {
       return
     }
 
-    // Add to local state
-    setEditedTags([...editedTags, finalTag])
     setTagInput("")
+    setHighlightedIndex(-1)
     closeSuggestions()
   }
 
@@ -145,9 +161,37 @@ export function EditMediaModal({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (isComposing) return
 
+    if (e.key === "ArrowDown") {
+      if (!showSuggestions) {
+        openSuggestions()
+      }
+      e.preventDefault()
+      if (suggestions.length > 0) {
+        setHighlightedIndex((prev) => {
+          if (prev === -1) return 0
+          const next = prev + 1
+          return next >= suggestions.length ? 0 : next
+        })
+      }
+      return
+    }
+
+    if (e.key === "ArrowUp" && showSuggestions && suggestions.length > 0) {
+      e.preventDefault()
+      setHighlightedIndex((prev) => {
+        if (prev <= 0) return suggestions.length - 1
+        return prev - 1
+      })
+      return
+    }
+
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault()
-      handleAddTag(tagInput)
+      if (showSuggestions && highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+        handleAddTag(suggestions[highlightedIndex])
+      } else {
+        handleAddTag(tagInput)
+      }
     }
 
     if (e.key === "Backspace" && tagInput === "") {
@@ -255,8 +299,17 @@ export function EditMediaModal({
 
               {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto tag-suggestions-list">
-                  {suggestions.map((suggestion) => (
-                    <button key={suggestion} onClick={() => handleAddTag(suggestion)} className="tag-suggestion-item">
+                  {suggestions.map((suggestion, index) => (
+                    <button
+                      key={suggestion}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                      onClick={() => handleAddTag(suggestion)}
+                      className={cn(
+                        "tag-suggestion-item",
+                        highlightedIndex === index && "bg-accent/10 text-foreground",
+                      )}
+                    >
                       {suggestion}
                     </button>
                   ))}
@@ -266,6 +319,7 @@ export function EditMediaModal({
               {showSuggestions && tagInput.trim() && suggestions.length === 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-10 p-3">
                   <button
+                    onMouseDown={(event) => event.preventDefault()}
                     onClick={() => handleAddTag(tagInput)}
                     className="w-full text-left text-sm text-text-secondary hover:text-foreground transition-colors"
                   >
