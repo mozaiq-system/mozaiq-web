@@ -1,0 +1,812 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MOZAIQ API",
+    "version": "1.0.0",
+    "description": "Mirrors existing localStorage flows."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "paths": {
+    "/media": {
+      "get": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "List saved media items",
+        "operationId": "listMedia",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaItem"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Create a media item",
+        "operationId": "createMedia",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaItemCreateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/media/{mediaId}": {
+      "patch": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Update a media item",
+        "operationId": "updateMedia",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MediaIdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaItemPatchInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Delete a media item",
+        "operationId": "deleteMedia",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MediaIdParam"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/tags/summaries": {
+      "get": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "List tag usage summaries",
+        "operationId": "getTagSummaries",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagSummary"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/tags/names": {
+      "get": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "List all tag names in priority order",
+        "operationId": "listTagNames",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/tags/{tagName}/preview": {
+      "get": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Preview media for a tag",
+        "operationId": "getTagPreview",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TagNameParam"
+          },
+          {
+            "$ref": "#/components/parameters/SampleSizeParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagPreview"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/tags/rename": {
+      "post": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Rename a tag across all media",
+        "operationId": "renameTag",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameTagRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/tags/merge": {
+      "post": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Merge one tag into another",
+        "operationId": "mergeTags",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeTagRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/tags/delete": {
+      "post": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Delete or replace a tag",
+        "operationId": "deleteTag",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteTagRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/settings": {
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Get app settings",
+        "operationId": "getSettings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppSettings"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Settings"
+        ],
+        "summary": "Save app settings",
+        "operationId": "updateSettings",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppSettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/metadata/youtube/{videoId}": {
+      "get": {
+        "tags": [
+          "Metadata"
+        ],
+        "summary": "Get cached YouTube metadata",
+        "operationId": "getYouTubeMetadata",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/VideoIdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/YouTubeMetadata"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Metadata"
+        ],
+        "summary": "Cache YouTube metadata",
+        "operationId": "putYouTubeMetadata",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/VideoIdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/YouTubeMetadata"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MediaItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "url",
+          "tags",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "`{timestamp}-{random}` format generated via Date.now() and base36 substring."
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Original media URL (typically YouTube)."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Trimmed unique tags (case-sensitive order)."
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix epoch milliseconds assigned at creation."
+          },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional title."
+          },
+          "channel": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional channel/author."
+          },
+          "thumbnail": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "description": "Optional thumbnail URL."
+          }
+        }
+      },
+      "MediaItemCreateInput": {
+        "type": "object",
+        "required": [
+          "url",
+          "tags"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Trimmed & deduped server-side."
+          },
+          "title": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "thumbnail": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "MediaItemPatchInput": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Replace entire list when present."
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "channel": {
+            "type": "string",
+            "nullable": true
+          },
+          "thumbnail": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          }
+        },
+        "minProperties": 1
+      },
+      "AppSettings": {
+        "type": "object",
+        "required": [
+          "theme",
+          "language",
+          "notifications"
+        ],
+        "properties": {
+          "theme": {
+            "type": "string",
+            "enum": [
+              "light",
+              "dark"
+            ],
+            "description": "Theme preference."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "ko"
+            ],
+            "description": "UI language."
+          },
+          "notifications": {
+            "type": "boolean",
+            "description": "Playlist alert toggle.",
+            "default": true
+          }
+        }
+      },
+      "TagSummary": {
+        "type": "object",
+        "required": [
+          "name",
+          "count"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "TagPreviewMedia": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "channel": {
+            "type": "string",
+            "nullable": true
+          },
+          "thumbnail": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          }
+        }
+      },
+      "TagPreview": {
+        "type": "object",
+        "required": [
+          "tag",
+          "total",
+          "media"
+        ],
+        "properties": {
+          "tag": {
+            "type": "string"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagPreviewMedia"
+            },
+            "description": "First N matches."
+          }
+        }
+      },
+      "RenameTagRequest": {
+        "type": "object",
+        "required": [
+          "currentName",
+          "nextName"
+        ],
+        "properties": {
+          "currentName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "nextName": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Trimmed before comparison."
+          }
+        }
+      },
+      "MergeTagRequest": {
+        "type": "object",
+        "required": [
+          "source",
+          "target"
+        ],
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "DeleteTagRequest": {
+        "type": "object",
+        "required": [
+          "tag"
+        ],
+        "properties": {
+          "tag": {
+            "type": "string",
+            "minLength": 1
+          },
+          "replacement": {
+            "type": "string",
+            "description": "Optional substitute added when missing."
+          }
+        }
+      },
+      "YouTubeMetadata": {
+        "type": "object",
+        "required": [
+          "title",
+          "author_name",
+          "thumbnail_url"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "author_name": {
+            "type": "string"
+          },
+          "thumbnail_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "NOT_FOUND",
+          "message": "Media item with id 1706123456789-abc123def not found"
+        }
+      }
+    },
+    "responses": {
+      "ValidationError": {
+        "description": "The request body or parameters were invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Requested resource does not exist",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "Unexpected storage failure mirroring current local behavior of returning an empty list with a console warning",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "MediaIdParam": {
+        "name": "mediaId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Identifier like `1706123456789-abc123def`."
+      },
+      "TagNameParam": {
+        "name": "tagName",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Exact tag label (case-sensitive)."
+      },
+      "VideoIdParam": {
+        "name": "videoId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{11}$"
+        },
+        "description": "YouTube video id for cache keys."
+      },
+      "SampleSizeParam": {
+        "name": "sampleSize",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 6
+        },
+        "description": "Preview item limit (default 6)."
+      }
+    }
+  }
+}
