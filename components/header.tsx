@@ -51,7 +51,7 @@ export function Header({ onMenuToggle, navItems = [] }: HeaderProps) {
   if (!mounted) {
     return (
       <header className="bg-background/80 backdrop-blur-md sticky top-0 z-40 theme-transition">
-        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-2 py-4 sm:px-3 lg:px-4">
+        <div className="mx-auto relative flex w-full max-w-screen-2xl items-center justify-between px-2 py-4 sm:px-3 lg:px-4">
           <div className="flex items-center gap-3">
             {onMenuToggle && (
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border md:hidden" />
@@ -59,12 +59,10 @@ export function Header({ onMenuToggle, navItems = [] }: HeaderProps) {
             <div className="w-8 h-8 rounded-lg bg-border/60" />
             <div className="h-5 w-24 rounded bg-border/40" />
           </div>
-          {navItems.length > 0 ? (
-            <div className="hidden flex flex-1 items-center justify-center px-4 md:flex">
+          {navItems.length > 0 && (
+            <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center px-4">
               <span className="h-9 w-40 rounded-full border border-border bg-border/20" />
             </div>
-          ) : (
-            <div className="hidden flex-1 md:block" />
           )}
           <div className="flex flex-1 items-center justify-end gap-2">
             <span className="h-10 w-10 rounded-lg bg-border/40" />
@@ -80,7 +78,7 @@ export function Header({ onMenuToggle, navItems = [] }: HeaderProps) {
   return (
     <>
       <header className="bg-background/80 backdrop-blur-md sticky top-0 z-40 theme-transition">
-        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-2 py-4 sm:px-3 lg:px-4">
+        <div className="mx-auto relative flex w-full max-w-screen-2xl items-center justify-between px-2 py-4 sm:px-3 lg:px-4">
           <div className="flex items-center gap-3">
             {onMenuToggle && (
               <button
@@ -100,8 +98,8 @@ export function Header({ onMenuToggle, navItems = [] }: HeaderProps) {
             </div>
           </div>
 
-          {navItems.length > 0 ? (
-            <nav className="hidden flex flex-1 items-center justify-center gap-1 px-4 md:flex">
+          {navItems.length > 0 && (
+            <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1 px-4">
               <div className="inline-flex items-center gap-1 rounded-full border border-border bg-background/90 px-1 py-1 shadow-sm">
                 {navItems.map((item) => (
                   <Link
@@ -119,8 +117,6 @@ export function Header({ onMenuToggle, navItems = [] }: HeaderProps) {
                 ))}
               </div>
             </nav>
-          ) : (
-            <div className="hidden flex-1 px-4 md:block" />
           )}
 
           <div className="flex flex-1 items-center justify-end gap-2">
