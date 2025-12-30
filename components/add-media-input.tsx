@@ -4,31 +4,41 @@ import type React from "react"
 
 import { useState } from "react"
 import { extractYouTubeId, fetchYouTubeMetadata } from "@/lib/youtube-utils"
+import { useToast } from "@/hooks/use-toast"
 
 interface AddMediaInputProps {
-  onModalOpen: (metadata: any, thumbnail: string) => void
-}
-
-function showToast(message: string) {
-  const event = new CustomEvent("showToast", { detail: { message } })
-  window.dispatchEvent(event)
+  onModalOpen: (
+    metadata: {
+      url: string
+      title: string
+      author_name: string
+      videoId: string
+    },
+    thumbnail: string,
+  ) => Promise<void> | void
 }
 
 export function AddMediaInput({ onModalOpen }: AddMediaInputProps) {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+
+  const notify = (message: string) => {
+    toast({ description: message })
+  }
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== "Enter") return
 
     const url = input.trim()
     if (!url) {
-      showToast("Please enter a YouTube URL")
+      notify("Please enter a YouTube URL")
       return
     }
 
-    if (!extractYouTubeId(url)) {
-      showToast("Please enter a valid YouTube URL")
+    const videoId = extractYouTubeId(url)
+    if (!videoId) {
+      notify("Please enter a valid YouTube URL")
       return
     }
 
@@ -37,23 +47,24 @@ export function AddMediaInput({ onModalOpen }: AddMediaInputProps) {
     try {
       const metadata = await fetchYouTubeMetadata(url)
       if (!metadata) {
-        showToast("Could not fetch video details. Please try again.")
+        notify("Could not fetch video details. Please try again.")
         setIsLoading(false)
         return
       }
 
-      onModalOpen(
+      await onModalOpen(
         {
           url,
           title: metadata.title,
           author_name: metadata.author_name,
+          videoId,
         },
         metadata.thumbnail_url,
       )
 
       setInput("")
     } catch {
-      showToast("Error fetching video details")
+      notify("Error fetching video details")
     } finally {
       setIsLoading(false)
     }

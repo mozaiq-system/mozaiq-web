@@ -43,9 +43,11 @@ export function SavedTags({ onTagsSelect, refreshToken }: SavedTagsProps) {
   if (!mounted || tags.length === 0) return null
 
   const handleTagClick = (tag: string) => {
-    const newSelectedTags = selectedTags.includes(tag) ? selectedTags.filter((t) => t !== tag) : [...selectedTags, tag]
+    const isRemoving = selectedTags.includes(tag)
+    const newSelectedTags = isRemoving ? selectedTags.filter((t) => t !== tag) : [...selectedTags, tag]
     setSelectedTags(newSelectedTags)
     onTagsSelect(newSelectedTags)
+
   }
 
   return (

@@ -55,7 +55,10 @@ export function SettingsModal({ isOpen, onClose, isDark, onThemeChange }: Settin
                 Theme
               </label>
               <button
-                onClick={() => onThemeChange(!isDark)}
+                onClick={() => {
+                  const newTheme = !isDark
+                  onThemeChange(newTheme)
+                }}
                 className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-in-out"
                 style={{
                   backgroundColor: isDark ? "var(--accent)" : "var(--border)",
