@@ -115,7 +115,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
                 href={buildPlaylistUrl(recommendation.videos)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative flex min-h-[320px] flex-col rounded-2xl border border-border bg-background/80 p-4 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[340px] lg:min-h-[360px]"
+                className="group relative flex flex-col rounded-2xl border border-border bg-background/80 p-4 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[320px] lg:min-h-[360px]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-lg font-semibold text-foreground">{recommendation.tag}</h3>
@@ -139,7 +139,8 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
                     )}
                   </button>
                 </div>
-                <div className="mt-3 flex-1 space-y-3">
+                <div className="mt-3 flex-1 space-y-2">
+                  <p className="text-xs text-text-secondary leading-snug">{recommendation.description}</p>
                   <div className="relative aspect-square overflow-hidden rounded-2xl">
                     {coverImage ? (
                       <img
