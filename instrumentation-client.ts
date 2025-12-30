@@ -3,7 +3,19 @@ import { trackAppOpened } from "@/lib/analytics"
 
 const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
 
-if (typeof window !== "undefined" && POSTHOG_KEY) {
+const isLocalHost = () => {
+  if (typeof window === "undefined") return true
+  const host = window.location.hostname
+  return (
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host === "0.0.0.0" ||
+    host === "[::1]" ||
+    host.endsWith(".local")
+  )
+}
+
+if (typeof window !== "undefined" && POSTHOG_KEY && !isLocalHost()) {
   const getAnonymousId = () => {
     const key = "mozaiq_anon_id"
     let id = window.localStorage.getItem(key)
