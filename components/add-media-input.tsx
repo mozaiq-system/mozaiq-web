@@ -6,7 +6,15 @@ import { useState } from "react"
 import { extractYouTubeId, fetchYouTubeMetadata } from "@/lib/youtube-utils"
 
 interface AddMediaInputProps {
-  onModalOpen: (metadata: any, thumbnail: string) => void
+  onModalOpen: (
+    metadata: {
+      url: string
+      title: string
+      author_name: string
+      videoId: string
+    },
+    thumbnail: string,
+  ) => Promise<void> | void
 }
 
 function showToast(message: string) {
@@ -27,7 +35,8 @@ export function AddMediaInput({ onModalOpen }: AddMediaInputProps) {
       return
     }
 
-    if (!extractYouTubeId(url)) {
+    const videoId = extractYouTubeId(url)
+    if (!videoId) {
       showToast("Please enter a valid YouTube URL")
       return
     }
@@ -42,11 +51,12 @@ export function AddMediaInput({ onModalOpen }: AddMediaInputProps) {
         return
       }
 
-      onModalOpen(
+      await onModalOpen(
         {
           url,
           title: metadata.title,
           author_name: metadata.author_name,
+          videoId,
         },
         metadata.thumbnail_url,
       )
