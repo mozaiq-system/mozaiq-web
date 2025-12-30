@@ -234,8 +234,10 @@ export function MediaGrid({ selectedTags }: MediaGridProps) {
       setItems(updatedItems)
       setEditingItem(null)
 
+      const mediaId = extractYouTubeId(updatedItem.url) ?? updatedItem.id
+
       trackMediaUpdated({
-        mediaId: updatedItem.id,
+        mediaId,
         source: "manual",
         modalName: "edit_media_modal",
         hasTagsChanged: tagsChanged,
@@ -244,7 +246,7 @@ export function MediaGrid({ selectedTags }: MediaGridProps) {
 
       if (tagsChanged) {
         trackMediaTagsUpdated({
-          mediaId: updatedItem.id,
+          mediaId,
           previousTags: originalItem.tags,
           nextTags: updatedItem.tags,
           editMode: "update",
@@ -252,7 +254,7 @@ export function MediaGrid({ selectedTags }: MediaGridProps) {
       }
 
       trackMediaMetadataMultiFieldEdit({
-        mediaId: updatedItem.id,
+        mediaId,
         fieldsUpdated,
       })
     } catch (error) {

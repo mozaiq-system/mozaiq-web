@@ -131,8 +131,10 @@ function useMediaWorkspace() {
         if (titleChanged) fieldsUpdated.push("title")
         if (channelChanged) fieldsUpdated.push("channel")
 
+        const mediaId = extractYouTubeId(created.url) ?? created.id
+
         trackMediaCreated({
-          mediaId: created.id,
+          mediaId,
           source: "manual",
           modalName: "edit_media_modal",
           hasTagsChanged: created.tags.length > 0,
@@ -140,14 +142,14 @@ function useMediaWorkspace() {
         })
 
         trackMediaTagsUpdated({
-          mediaId: created.id,
+          mediaId,
           previousTags: [],
           nextTags: created.tags,
           editMode: "create",
         })
 
         trackMediaMetadataMultiFieldEdit({
-          mediaId: created.id,
+          mediaId,
           fieldsUpdated,
         })
 
@@ -182,8 +184,10 @@ function useMediaWorkspace() {
         channel: item.channel,
       })
 
+      const mediaId = extractYouTubeId(originalItem.url) ?? originalItem.id
+
       trackMediaUpdated({
-        mediaId: item.id,
+        mediaId,
         source: "manual",
         modalName: "edit_media_modal",
         hasTagsChanged: tagsChanged,
@@ -192,7 +196,7 @@ function useMediaWorkspace() {
 
       if (tagsChanged) {
         trackMediaTagsUpdated({
-          mediaId: item.id,
+          mediaId,
           previousTags: originalItem.tags,
           nextTags: item.tags,
           editMode: "update",
@@ -200,7 +204,7 @@ function useMediaWorkspace() {
       }
 
       trackMediaMetadataMultiFieldEdit({
-        mediaId: item.id,
+        mediaId,
         fieldsUpdated,
       })
 
