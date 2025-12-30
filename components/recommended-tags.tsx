@@ -2,11 +2,12 @@
 
 import { useState } from "react"
 import { Check, Loader2, Plus } from "lucide-react"
-import { addMediaItem, loadMediaItems } from "@/lib/storage"
+import { addMediaItem, loadMediaItems, updateMediaItem } from "@/lib/storage"
 import { RECOMMENDED_TAGS } from "@/data/recommended-tags"
 import { fetchYouTubeMetadata } from "@/lib/youtube-utils"
 import { trackMediaCreated, trackMediaTagsUpdated, trackUiError } from "@/lib/analytics"
 import { useToast } from "@/hooks/use-toast"
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
 
 interface RecommendedTagsProps {
   onLibraryUpdate?: (tag: string) => void
@@ -34,18 +35,50 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
     setSavingTag(tag)
     try {
       const existing = await loadMediaItems()
-      const existingIds = new Set(
-        existing
-          .map((item) => getYouTubeId(item.url))
-          .filter((id): id is string => Boolean(id)),
-      )
-      const urlsToAdd = recommendation.videos.filter((video) => {
-        const id = getYouTubeId(video)
-        return !(id && existingIds.has(id))
+      const itemsByVideoId = new Map<string, (typeof existing)[number]>()
+      existing.forEach((item) => {
+        const id = getYouTubeId(item.url)
+        if (id) {
+          itemsByVideoId.set(id, item)
+        }
       })
 
+      const urlsToAdd: string[] = []
+      const itemsToUpdate: { id: string; previousTags: string[]; nextTags: string[] }[] = []
+
+      recommendation.videos.forEach((video) => {
+        const videoId = getYouTubeId(video)
+        if (!videoId) return
+        const existingItem = itemsByVideoId.get(videoId)
+        if (!existingItem) {
+          urlsToAdd.push(video)
+          return
+        }
+
+        const hasTag = existingItem.tags.includes(tag)
+        if (!hasTag) {
+          itemsToUpdate.push({
+            id: existingItem.id,
+            previousTags: [...existingItem.tags],
+            nextTags: [...existingItem.tags, tag],
+          })
+        }
+      })
+
+      if (itemsToUpdate.length > 0) {
+        await Promise.all(itemsToUpdate.map((entry) => updateMediaItem(entry.id, { tags: entry.nextTags })))
+        itemsToUpdate.forEach((entry) => {
+          trackMediaTagsUpdated({
+            mediaId: entry.id,
+            previousTags: entry.previousTags,
+            nextTags: entry.nextTags,
+            editMode: "update",
+          })
+        })
+      }
+
       if (urlsToAdd.length === 0) {
-        notify("모든 추천 트랙이 이미 저장되어 있어요.")
+        notify(itemsToUpdate.length > 0 ? "기존 트랙에 태그를 추가했어요." : "모든 추천 트랙이 이미 저장되어 있어요.")
         setCompletedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
         onLibraryUpdate?.(tag)
         return
@@ -127,70 +160,72 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         <div className="flex flex-col gap-2">
           <span className="text-sm font-semibold uppercase tracking-wide text-text-tertiary">Recommend Tag</span>
-          <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">오늘의 태그 큐레이션</h2>
-          <p className="text-sm text-text-secondary">마음에 드는 태그를 라이브러리에 추가하고 바로 감상해 보세요.</p>
+          <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">Tag Preset</h2>
+          <p className="text-sm text-text-secondary">add tag set or click and listen immediately</p>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-          {RECOMMENDED_TAGS.map((recommendation) => {
-            const isSaving = savingTag === recommendation.tag
-            const isCompleted = completedTags.includes(recommendation.tag)
-            const coverId = getYouTubeId(recommendation.videos[0])
-            const coverImage = coverId ? `https://i.ytimg.com/vi/${coverId}/hq720.jpg` : null
+        <div className="relative w-full">
+          <Carousel opts={{ align: "start", loop: true }} className="w-full">
+            <CarouselContent className="pt-4" containerClassName="overflow-x-auto pb-3">
+              {RECOMMENDED_TAGS.map((recommendation) => {
+                const isSaving = savingTag === recommendation.tag
+                const isCompleted = completedTags.includes(recommendation.tag)
+                const coverId = getYouTubeId(recommendation.videos[0])
+                const coverImage = coverId ? `https://i.ytimg.com/vi/${coverId}/hq720.jpg` : null
 
-            return (
-              <a
-                key={recommendation.tag}
-                href={buildPlaylistUrl(recommendation.videos)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative flex flex-col rounded-2xl border border-border bg-background/80 p-4 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[320px] lg:min-h-[360px]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-lg font-semibold text-foreground">{recommendation.tag}</h3>
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      handleAddRecommended(recommendation.tag)
-                    }}
-                    disabled={isSaving || isCompleted}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:border-border/60 disabled:text-text-tertiary"
-                    aria-label={`${recommendation.tag} 태그 추천을 추가`}
-                  >
-                    {isSaving ? (
-                      <Loader2 className="h-5 w-5 animate-spin text-accent" />
-                    ) : isCompleted ? (
-                      <Check className="h-5 w-5 text-accent" />
-                    ) : (
-                      <Plus className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-                <div className="mt-3 flex-1 space-y-2">
-                  <p className="text-xs text-text-secondary leading-snug">{recommendation.description}</p>
-                  <div className="relative aspect-square overflow-hidden rounded-2xl">
-                    {coverImage ? (
-                      <img
-                        src={coverImage}
-                        alt={`${recommendation.tag} 추천 썸네일`}
-                        className="h-full w-full rounded-2xl object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-text-tertiary">
-                        Preview unavailable
-                      </div>
-                    )}
-                  </div>
-
-                  {/* <div className="rounded-xl bg-surface/60 px-4 py-3 text-sm">
-                    <p className="font-medium text-text-secondary">추천 트랙 {recommendation.videos.length}곡</p>
-                    <p className="text-xs text-text-tertiary">카드를 클릭하면 익명 재생 목록이 열립니다.</p>
-                  </div> */}
-                </div>
-              </a>
-            )
-          })}
+                return (
+                  <CarouselItem key={recommendation.tag} className="basis-auto pl-4">
+                    <div className="flex justify-center">
+                      <a
+                        href={buildPlaylistUrl(recommendation.videos)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative flex w-full max-w-[220px] flex-col rounded-2xl border border-border bg-background/80 p-3 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:max-w-[240px] sm:min-h-[210px] lg:min-h-[240px]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="text-lg font-semibold text-foreground">{recommendation.tag}</h3>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault()
+                              event.stopPropagation()
+                              handleAddRecommended(recommendation.tag)
+                            }}
+                            disabled={isSaving || isCompleted}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:border-border/60 disabled:text-text-tertiary"
+                            aria-label={`${recommendation.tag} 태그 추천을 추가`}
+                          >
+                            {isSaving ? (
+                              <Loader2 className="h-5 w-5 animate-spin text-accent" />
+                            ) : isCompleted ? (
+                              <Check className="h-5 w-5 text-accent" />
+                            ) : (
+                              <Plus className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                        <div className="mt-3 flex-1 space-y-2">
+                          <p className="text-xs text-text-secondary leading-snug line-clamp-1">{recommendation.description}</p>
+                          <div className="relative aspect-square overflow-hidden rounded-2xl">
+                            {coverImage ? (
+                              <img
+                                src={coverImage}
+                                alt={`${recommendation.tag} 추천 썸네일`}
+                                className="h-full w-full rounded-2xl object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-xs text-text-tertiary">
+                                Preview unavailable
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </a>
+                    </div>
+                  </CarouselItem>
+                )
+              })}
+            </CarouselContent>
+          </Carousel>
         </div>
       </div>
     </section>

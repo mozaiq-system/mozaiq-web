@@ -37,20 +37,11 @@ interface MediaModalState {
   originalItem?: any
 }
 
-export default function Home() {
-  const [mounted, setMounted] = useState(false)
+function useMediaWorkspace() {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [mediaModalState, setMediaModalState] = useState<MediaModalState | null>(null)
   const [savedTagsVersion, setSavedTagsVersion] = useState(0)
   const [mediaLibraryVersion, setMediaLibraryVersion] = useState(0)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return null
-  }
 
   const handleSavedTagsSelect = (tags: string[]) => {
     setSelectedTags(tags)
@@ -245,44 +236,137 @@ export default function Home() {
     }
   }
 
+  return {
+    selectedTags,
+    savedTagsRefreshKey: savedTagsVersion.toString(),
+    mediaLibraryVersion,
+    mediaModalState,
+    handleAddMediaOpen,
+    handleSavedTagsSelect,
+    handleRecommendedUpdate,
+    closeModal,
+    handleSaveMedia,
+    handleDeleteMedia,
+  }
+}
+
+interface MediaWorkspaceProps {
+  selectedTags: string[]
+  savedTagsRefreshKey: string
+  mediaLibraryVersion: number
+  onSavedTagsSelect: (tags: string[]) => void
+  onAddMedia: (metadata: NewMediaData, thumbnail: string) => Promise<void> | void
+  modalState: MediaModalState | null
+  onCloseModal: () => void
+  onSaveMedia: (item: any) => Promise<void> | void
+  onDeleteMedia: (itemId: string) => Promise<void> | void
+}
+
+function MediaWorkspace({
+  selectedTags,
+  savedTagsRefreshKey,
+  mediaLibraryVersion,
+  onSavedTagsSelect,
+  onAddMedia,
+  modalState,
+  onCloseModal,
+  onSaveMedia,
+  onDeleteMedia,
+}: MediaWorkspaceProps) {
+  const isEditMode = modalState?.mode === "edit"
+  const handleModalSave = (updatedItem: any) => {
+    void onSaveMedia(updatedItem)
+  }
+  const handleModalDelete = (itemId: string) => {
+    void onDeleteMedia(itemId)
+  }
+
+  return (
+    <>
+      <section className="px-2 sm:px-3 lg:px-4">
+        <div className="mx-auto w-full max-w-7xl flex flex-col gap-2">
+          <span className="text-sm font-semibold uppercase tracking-wide text-text-tertiary">Mozaiq</span>
+          <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">Media</h2>
+          <p className="text-sm text-text-secondary">add/edit media you own</p>
+        </div>
+      </section>
+
+      <section className="px-2 sm:px-3 lg:px-4">
+        <div className="mx-auto w-full max-w-7xl">
+          <AddMediaInput onModalOpen={onAddMedia} />
+        </div>
+      </section>
+
+      <div className="px-2 sm:px-3 lg:px-4">
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="flex flex-wrap gap-2 justify-start items-center">
+            <SavedTags onTagsSelect={onSavedTagsSelect} refreshToken={savedTagsRefreshKey} />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 px-2 sm:px-3 lg:px-4 pb-8">
+        <div className="max-w-7xl mx-auto w-full">
+          <MediaGrid key={mediaLibraryVersion} selectedTags={selectedTags} />
+        </div>
+      </div>
+
+      {modalState && (
+        <EditMediaModal
+          isOpen={true}
+          item={modalState.item}
+          metadata={modalState.metadata}
+          thumbnail={modalState.thumbnail}
+          onClose={onCloseModal}
+          onSave={handleModalSave}
+          onDelete={isEditMode ? handleModalDelete : () => {}}
+          isAddMode={modalState.mode === "add"}
+        />
+      )}
+    </>
+  )
+}
+
+export default function Home() {
+  const [mounted, setMounted] = useState(false)
+  const {
+    selectedTags,
+    savedTagsRefreshKey,
+    mediaLibraryVersion,
+    mediaModalState,
+    handleAddMediaOpen,
+    handleSavedTagsSelect,
+    handleRecommendedUpdate,
+    closeModal,
+    handleSaveMedia,
+    handleDeleteMedia,
+  } = useMediaWorkspace()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
   return (
     <AppShell>
       <div className="flex flex-col gap-6 sm:gap-8">
         <RecommendedTags onLibraryUpdate={handleRecommendedUpdate} />
 
-        <section className="px-2 sm:px-3 lg:px-4">
-          <div className="mx-auto w-full max-w-3xl">
-            <AddMediaInput onModalOpen={handleAddMediaOpen} />
-          </div>
-        </section>
-
-        <div className="px-2 sm:px-3 lg:px-4">
-          <div className="max-w-7xl mx-auto w-full">
-            <div className="flex flex-wrap gap-2 justify-start items-center">
-              <SavedTags onTagsSelect={handleSavedTagsSelect} refreshToken={savedTagsVersion.toString()} />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 px-2 sm:px-3 lg:px-4 pb-8">
-          <div className="max-w-7xl mx-auto w-full">
-            <MediaGrid key={mediaLibraryVersion} selectedTags={selectedTags} />
-          </div>
-        </div>
-      </div>
-
-      {mediaModalState && (
-        <EditMediaModal
-          isOpen={true}
-          item={mediaModalState.item}
-          metadata={mediaModalState.metadata}
-          thumbnail={mediaModalState.thumbnail}
-          onClose={closeModal}
-          onSave={handleSaveMedia}
-          onDelete={mediaModalState.mode === "edit" ? handleDeleteMedia : () => {}}
-          isAddMode={mediaModalState.mode === "add"}
+        <MediaWorkspace
+          selectedTags={selectedTags}
+          savedTagsRefreshKey={savedTagsRefreshKey}
+          mediaLibraryVersion={mediaLibraryVersion}
+          onSavedTagsSelect={handleSavedTagsSelect}
+          onAddMedia={handleAddMediaOpen}
+          modalState={mediaModalState}
+          onCloseModal={closeModal}
+          onSaveMedia={handleSaveMedia}
+          onDeleteMedia={handleDeleteMedia}
         />
-      )}
+      </div>
     </AppShell>
   )
 }
