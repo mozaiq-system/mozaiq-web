@@ -127,10 +127,10 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         <div className="flex flex-col gap-2">
           <span className="text-sm font-semibold uppercase tracking-wide text-text-tertiary">Recommend Tag</span>
-          <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">오늘의 태그 큐레이션</h2>
-          <p className="text-sm text-text-secondary">마음에 드는 태그를 라이브러리에 추가하고 바로 감상해 보세요.</p>
+          <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">Tag Preset</h2>
+          <p className="text-sm text-text-secondary">add tag set or click and listen immediately</p>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 justify-items-center sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
           {RECOMMENDED_TAGS.map((recommendation) => {
             const isSaving = savingTag === recommendation.tag
             const isCompleted = completedTags.includes(recommendation.tag)
@@ -143,7 +143,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
                 href={buildPlaylistUrl(recommendation.videos)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative flex flex-col rounded-2xl border border-border bg-background/80 p-4 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[320px] lg:min-h-[360px]"
+                className="group relative flex w-full max-w-[220px] flex-col rounded-2xl border border-border bg-background/80 p-3 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:max-w-[240px] sm:min-h-[210px] lg:min-h-[240px]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-lg font-semibold text-foreground">{recommendation.tag}</h3>
