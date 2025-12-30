@@ -6,6 +6,7 @@ import { addMediaItem, loadMediaItems } from "@/lib/storage"
 import { RECOMMENDED_TAGS } from "@/data/recommended-tags"
 import { fetchYouTubeMetadata } from "@/lib/youtube-utils"
 import { trackMediaCreated, trackMediaTagsUpdated, trackUiError } from "@/lib/analytics"
+import { useToast } from "@/hooks/use-toast"
 
 interface RecommendedTagsProps {
   onLibraryUpdate?: (tag: string) => void
@@ -14,11 +15,8 @@ interface RecommendedTagsProps {
 export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
   const [savingTag, setSavingTag] = useState<string | null>(null)
   const [completedTags, setCompletedTags] = useState<string[]>([])
-
-  const showToast = (message: string) => {
-    const event = new CustomEvent("showToast", { detail: { message } })
-    window.dispatchEvent(event)
-  }
+  const { toast } = useToast()
+  const notify = (message: string) => toast({ description: message })
 
   const buildPlaylistUrl = (videos: string[]) => {
     const ids = videos
@@ -47,7 +45,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
       })
 
       if (urlsToAdd.length === 0) {
-        showToast("모든 추천 트랙이 이미 저장되어 있어요.")
+        notify("모든 추천 트랙이 이미 저장되어 있어요.")
         setCompletedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
         onLibraryUpdate?.(tag)
         return
@@ -74,7 +72,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         }),
       )
 
-      showToast(`${tag} 태그와 플레이리스트를 라이브러리에 추가했어요.`)
+      notify(`${tag} 태그와 플레이리스트를 라이브러리에 추가했어요.`)
       setCompletedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
       onLibraryUpdate?.(tag)
 
@@ -101,7 +99,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         errorCode: "prepared_media_failed",
         messageShort: "Failed to add recommended tag bundle",
       })
-      showToast("추천 태그를 추가하지 못했어요. 다시 시도해 주세요.")
+      notify("추천 태그를 추가하지 못했어요. 다시 시도해 주세요.")
     } finally {
       setSavingTag(null)
     }

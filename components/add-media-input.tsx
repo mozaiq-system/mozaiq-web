@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { extractYouTubeId, fetchYouTubeMetadata } from "@/lib/youtube-utils"
+import { useToast } from "@/hooks/use-toast"
 
 interface AddMediaInputProps {
   onModalOpen: (
@@ -17,27 +18,27 @@ interface AddMediaInputProps {
   ) => Promise<void> | void
 }
 
-function showToast(message: string) {
-  const event = new CustomEvent("showToast", { detail: { message } })
-  window.dispatchEvent(event)
-}
-
 export function AddMediaInput({ onModalOpen }: AddMediaInputProps) {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+
+  const notify = (message: string) => {
+    toast({ description: message })
+  }
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== "Enter") return
 
     const url = input.trim()
     if (!url) {
-      showToast("Please enter a YouTube URL")
+      notify("Please enter a YouTube URL")
       return
     }
 
     const videoId = extractYouTubeId(url)
     if (!videoId) {
-      showToast("Please enter a valid YouTube URL")
+      notify("Please enter a valid YouTube URL")
       return
     }
 
@@ -46,7 +47,7 @@ export function AddMediaInput({ onModalOpen }: AddMediaInputProps) {
     try {
       const metadata = await fetchYouTubeMetadata(url)
       if (!metadata) {
-        showToast("Could not fetch video details. Please try again.")
+        notify("Could not fetch video details. Please try again.")
         setIsLoading(false)
         return
       }
@@ -63,7 +64,7 @@ export function AddMediaInput({ onModalOpen }: AddMediaInputProps) {
 
       setInput("")
     } catch {
-      showToast("Error fetching video details")
+      notify("Error fetching video details")
     } finally {
       setIsLoading(false)
     }

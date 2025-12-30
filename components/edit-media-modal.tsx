@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Check, Pencil } from "lucide-react"
 import { useTagAutocomplete } from "@/hooks/use-tag-autocomplete"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 interface MediaItem {
   id: string
@@ -42,11 +43,6 @@ function extractYouTubeId(url: string): string | null {
   }
 }
 
-function showToast(message: string) {
-  const event = new CustomEvent("showToast", { detail: { message } })
-  window.dispatchEvent(event)
-}
-
 export function EditMediaModal({
   isOpen,
   item,
@@ -70,6 +66,11 @@ export function EditMediaModal({
   const modalContentRef = useRef<HTMLDivElement>(null)
   const { suggestions, showSuggestions, handleInputChange, openSuggestions, closeSuggestions } =
     useTagAutocomplete(editedTags)
+  const { toast } = useToast()
+
+  const notify = (message: string) => {
+    toast({ description: message })
+  }
 
   useEffect(() => {
     if (item) {
@@ -148,7 +149,7 @@ export function EditMediaModal({
     setEditedTags((previous) => {
       const isDuplicate = previous.some((t) => t.toLowerCase() === finalTag.toLowerCase())
       if (isDuplicate) {
-        showToast("Tag already exists")
+        notify("Tag already exists")
         duplicate = true
         return previous
       }
@@ -227,7 +228,7 @@ export function EditMediaModal({
     }
     onSave(updatedItem)
     onClose()
-    showToast(isAddMode ? "Track saved locally!" : "Changes saved locally!")
+    notify(isAddMode ? "Track saved locally!" : "Changes saved locally!")
   }
 
   const handleDeleteConfirm = () => {

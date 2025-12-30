@@ -79,9 +79,6 @@ export function Header({ onMenuToggle, navItems = [] }: HeaderProps) {
             className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => router.push("/")}
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-light flex items-center justify-center">
-              <span className="text-white font-bold text-sm">M</span>
-            </div>
             <h1 className="text-xl font-bold tracking-tight">MOZAIQ</h1>
           </div>
         </div>
