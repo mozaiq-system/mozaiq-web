@@ -36,8 +36,15 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
     setSavingTag(tag)
     try {
       const existing = await loadMediaItems()
-      const existingUrls = new Set(existing.map((item) => item.url))
-      const urlsToAdd = recommendation.videos.filter((video) => !existingUrls.has(video))
+      const existingIds = new Set(
+        existing
+          .map((item) => getYouTubeId(item.url))
+          .filter((id): id is string => Boolean(id)),
+      )
+      const urlsToAdd = recommendation.videos.filter((video) => {
+        const id = getYouTubeId(video)
+        return !(id && existingIds.has(id))
+      })
 
       if (urlsToAdd.length === 0) {
         showToast("모든 추천 트랙이 이미 저장되어 있어요.")
