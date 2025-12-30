@@ -7,9 +7,11 @@ import { SettingsModal } from "./settings-modal"
 interface ProfileAvatarProps {
   isDark: boolean
   onThemeChange: (isDark: boolean) => void
+  userInitial?: string
+  onLogout?: () => void
 }
 
-export function ProfileAvatar({ isDark, onThemeChange }: ProfileAvatarProps) {
+export function ProfileAvatar({ isDark, onThemeChange, userInitial, onLogout }: ProfileAvatarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -25,7 +27,7 @@ export function ProfileAvatar({ isDark, onThemeChange }: ProfileAvatarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const userInitial = "M"
+  const displayInitial = userInitial?.trim() ? userInitial.trim().slice(0, 2).toUpperCase() : "M"
 
   return (
     <>
@@ -39,7 +41,7 @@ export function ProfileAvatar({ isDark, onThemeChange }: ProfileAvatarProps) {
           aria-label="Profile menu"
           aria-expanded={isOpen}
         >
-          <span className="text-white font-semibold text-sm">{userInitial}</span>
+          <span className="text-white font-semibold text-sm">{displayInitial}</span>
         </button>
 
         {isOpen && (
@@ -78,6 +80,7 @@ export function ProfileAvatar({ isDark, onThemeChange }: ProfileAvatarProps) {
               <button
                 onClick={() => {
                   setIsOpen(false)
+                  onLogout?.()
                 }}
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors duration-200 ease-in-out cursor-pointer hover:bg-accent/10 last:rounded-b-lg"
                 style={{

@@ -99,7 +99,12 @@ export default function TagsIndexPage() {
   return (
     <AppShell>
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-2 py-8 sm:px-3 lg:px-4">
-        <header className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background/80 px-3 py-4 shadow-sm backdrop-blur sm:px-4">
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-semibold uppercase tracking-wide text-text-tertiary">Recommend Tag</span>
+          <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">태그 관리자</h2>
+          <p className="text-sm text-text-secondary">분류한 태그를 선택해 수정하고, 합치고, 한 번에 변경하세요.</p>
+        </div>
+        {/* <header className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background/80 px-3 py-4 shadow-sm backdrop-blur sm:px-4">
           <div>
             <p className="text-sm uppercase tracking-wide text-text-tertiary">Tag Control</p>
             <h1 className="text-2xl font-semibold leading-tight">Manage Tags</h1>
@@ -107,7 +112,7 @@ export default function TagsIndexPage() {
           <div className="rounded-lg border border-border px-3 py-2 text-xs text-text-secondary">
             Select tags to rename, merge, or replace in bulk
           </div>
-        </header>
+        </header> */}
 
         <section className="rounded-xl border border-border bg-background/80 shadow-sm backdrop-blur">
           <form
@@ -143,7 +148,7 @@ export default function TagsIndexPage() {
               </select>
             </div>
 
-            <div
+            {/* <div
               className="flex w-full flex-col gap-2 sm:w-auto"
               role="status"
               aria-live="polite"
@@ -173,7 +178,7 @@ export default function TagsIndexPage() {
                   Replace / Delete
                 </button>
               </div>
-            </div>
+            </div> */}
           </form>
         </section>
 
