@@ -8,6 +8,12 @@ import { EditMediaModal } from "@/components/edit-media-modal"
 import { addMediaItem } from "@/lib/storage"
 import { AppShell } from "@/components/app-shell"
 import { RecommendedTags } from "@/components/recommended-tags"
+import {
+  trackMediaCreated,
+  trackMediaTagsUpdated,
+  trackMediaMetadataMultiFieldEdit,
+  trackUiError,
+} from "@/lib/analytics"
 
 interface NewMediaData {
   url: string
@@ -46,18 +52,59 @@ export default function Home() {
   }
 
   const handleSaveNewMedia = async (item: any) => {
-    const fallbackTitle = newMediaData!.title
-    const fallbackChannel = newMediaData!.author_name
-    await addMediaItem({
-      url: newMediaData!.url,
-      tags: item.tags,
-      title: item.title ?? fallbackTitle,
-      channel: item.channel ?? fallbackChannel,
-      thumbnail: newMediaThumbnail,
-    })
-    setShowAddModal(false)
-    setNewMediaData(null)
-    setNewMediaThumbnail("")
+    if (!newMediaData) return
+    const fallbackTitle = newMediaData.title
+    const fallbackChannel = newMediaData.author_name
+
+    try {
+      const created = await addMediaItem({
+        url: newMediaData.url,
+        tags: item.tags,
+        title: item.title ?? fallbackTitle,
+        channel: item.channel ?? fallbackChannel,
+        thumbnail: newMediaThumbnail,
+      })
+
+      const normalizedTitle = (item.title ?? "").trim()
+      const normalizedChannel = (item.channel ?? "").trim()
+      const titleChanged = Boolean(normalizedTitle) && normalizedTitle !== fallbackTitle.trim()
+      const channelChanged = Boolean(normalizedChannel) && normalizedChannel !== fallbackChannel.trim()
+      const hasMetadataChanged = titleChanged || channelChanged
+      const fieldsUpdated: string[] = []
+      if (titleChanged) fieldsUpdated.push("title")
+      if (channelChanged) fieldsUpdated.push("channel")
+
+      trackMediaCreated({
+        mediaId: created.id,
+        source: "manual",
+        modalName: "edit_media_modal",
+        hasTagsChanged: created.tags.length > 0,
+        hasMetadataChanged,
+      })
+
+      trackMediaTagsUpdated({
+        mediaId: created.id,
+        previousTags: [],
+        nextTags: created.tags,
+        editMode: "create",
+      })
+
+      trackMediaMetadataMultiFieldEdit({
+        mediaId: created.id,
+        fieldsUpdated,
+      })
+
+      setShowAddModal(false)
+      setNewMediaData(null)
+      setNewMediaThumbnail("")
+    } catch (error) {
+      console.error(error)
+      trackUiError({
+        where: "add_media_modal",
+        errorCode: "media_create_failed",
+        messageShort: "Failed to create media item",
+      })
+    }
   }
 
   return (

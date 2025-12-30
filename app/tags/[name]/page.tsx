@@ -13,6 +13,7 @@ import {
 } from "@/lib/tag-service"
 import { loadMediaItems, saveMediaItems, invalidateCaches } from "@/lib/storage"
 import { AppShell } from "@/components/app-shell"
+import { trackUiError } from "@/lib/analytics"
 
 interface RenameAction {
   type: "rename"
@@ -174,6 +175,7 @@ export default function TagDetailPage() {
         await renameTag(pendingAction.payload)
         await loadData(pendingAction.payload.nextName)
         router.replace(`/tags/${encodeURIComponent(pendingAction.payload.nextName)}`)
+
         setUndoState({
           message: `Renamed to ${pendingAction.payload.nextName}`,
           perform: async () => {
@@ -189,6 +191,7 @@ export default function TagDetailPage() {
         await mergeTags(pendingAction.payload)
         await loadData(pendingAction.payload.target)
         router.replace(`/tags/${encodeURIComponent(pendingAction.payload.target)}`)
+
         setUndoState({
           message: `Merged into ${pendingAction.payload.target}`,
           perform: async () => {
@@ -203,6 +206,7 @@ export default function TagDetailPage() {
       if (pendingAction.type === "delete") {
         await deleteTag(pendingAction.payload)
         router.replace("/tags")
+
         setUndoState({
           message: pendingAction.payload.replacement
             ? `Replaced ${pendingAction.payload.tag} with ${pendingAction.payload.replacement}`
@@ -216,6 +220,11 @@ export default function TagDetailPage() {
         })
       }
     } catch (err) {
+      trackUiError({
+        where: "tag_detail_page",
+        errorCode: "tag_operation_failed",
+        messageShort: "Failed to process tag action",
+      })
       await handleFailure()
     } finally {
       setIsProcessing(false)

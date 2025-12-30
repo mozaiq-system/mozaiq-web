@@ -156,7 +156,7 @@ export default function TagsIndexPage() {
                   className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-light disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={selectedCount !== 1}
                 >
-                  Rename
+                  Rename 
                 </button>
                 <button
                   type="button"

@@ -5,6 +5,7 @@ import { Check, Loader2, Plus } from "lucide-react"
 import { addMediaItem, loadMediaItems } from "@/lib/storage"
 import { RECOMMENDED_TAGS } from "@/data/recommended-tags"
 import { fetchYouTubeMetadata } from "@/lib/youtube-utils"
+import { trackMediaCreated, trackMediaTagsUpdated, trackUiError } from "@/lib/analytics"
 
 interface RecommendedTagsProps {
   onLibraryUpdate?: (tag: string) => void
@@ -53,7 +54,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         }),
       )
 
-      await Promise.all(
+      const createdItems = await Promise.all(
         urlsToAdd.map((url, index) => {
           const metadata = metadataByUrl.get(url)
           return addMediaItem({
@@ -69,8 +70,30 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
       showToast(`${tag} 태그와 플레이리스트를 라이브러리에 추가했어요.`)
       setCompletedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
       onLibraryUpdate?.(tag)
+
+      createdItems.forEach((created) => {
+        trackMediaCreated({
+          mediaId: created.id,
+          source: "prepared",
+          modalName: "recommended_tags_card",
+          hasTagsChanged: created.tags.length > 0,
+          hasMetadataChanged: false,
+        })
+
+        trackMediaTagsUpdated({
+          mediaId: created.id,
+          previousTags: [],
+          nextTags: created.tags,
+          editMode: "create",
+        })
+      })
     } catch (error) {
       console.error(error)
+      trackUiError({
+        where: "recommended_tags",
+        errorCode: "prepared_media_failed",
+        messageShort: "Failed to add recommended tag bundle",
+      })
       showToast("추천 태그를 추가하지 못했어요. 다시 시도해 주세요.")
     } finally {
       setSavingTag(null)
