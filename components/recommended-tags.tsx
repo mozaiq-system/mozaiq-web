@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Check, Loader2, Plus } from "lucide-react"
-import { addMediaItem, loadMediaItems } from "@/lib/storage"
+import { addMediaItem, loadMediaItems, updateMediaItem } from "@/lib/storage"
 import { RECOMMENDED_TAGS } from "@/data/recommended-tags"
 import { fetchYouTubeMetadata } from "@/lib/youtube-utils"
 import { trackMediaCreated, trackMediaTagsUpdated, trackUiError } from "@/lib/analytics"
@@ -41,18 +41,50 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
     setSavingTag(tag)
     try {
       const existing = await loadMediaItems()
-      const existingIds = new Set(
-        existing
-          .map((item) => getYouTubeId(item.url))
-          .filter((id): id is string => Boolean(id)),
-      )
-      const urlsToAdd = recommendation.videos.filter((video) => {
-        const id = getYouTubeId(video)
-        return !(id && existingIds.has(id))
+      const itemsByVideoId = new Map<string, (typeof existing)[number]>()
+      existing.forEach((item) => {
+        const id = getYouTubeId(item.url)
+        if (id) {
+          itemsByVideoId.set(id, item)
+        }
       })
 
+      const urlsToAdd: string[] = []
+      const itemsToUpdate: { id: string; previousTags: string[]; nextTags: string[] }[] = []
+
+      recommendation.videos.forEach((video) => {
+        const videoId = getYouTubeId(video)
+        if (!videoId) return
+        const existingItem = itemsByVideoId.get(videoId)
+        if (!existingItem) {
+          urlsToAdd.push(video)
+          return
+        }
+
+        const hasTag = existingItem.tags.includes(tag)
+        if (!hasTag) {
+          itemsToUpdate.push({
+            id: existingItem.id,
+            previousTags: [...existingItem.tags],
+            nextTags: [...existingItem.tags, tag],
+          })
+        }
+      })
+
+      if (itemsToUpdate.length > 0) {
+        await Promise.all(itemsToUpdate.map((entry) => updateMediaItem(entry.id, { tags: entry.nextTags })))
+        itemsToUpdate.forEach((entry) => {
+          trackMediaTagsUpdated({
+            mediaId: entry.id,
+            previousTags: entry.previousTags,
+            nextTags: entry.nextTags,
+            editMode: "update",
+          })
+        })
+      }
+
       if (urlsToAdd.length === 0) {
-        notify("모든 추천 트랙이 이미 저장되어 있어요.")
+        notify(itemsToUpdate.length > 0 ? "기존 트랙에 태그를 추가했어요." : "모든 추천 트랙이 이미 저장되어 있어요.")
         setCompletedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
         onLibraryUpdate?.(tag)
         return
@@ -135,7 +167,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         <div className="flex flex-col gap-2">
           <span className="text-sm font-semibold uppercase tracking-wide text-text-tertiary">Recommend Tag</span>
           <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">Tag Preset</h2>
-          <p className="text-sm text-text-secondary">add tag set or listen immediately</p>
+          <p className="text-sm text-text-secondary">add tag set or click and listen immediately</p>
         </div>
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
           <CarouselContent>
