@@ -135,7 +135,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         <div className="flex flex-col gap-2">
           <span className="text-sm font-semibold uppercase tracking-wide text-text-tertiary">Recommend Tag</span>
           <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">Tag Preset</h2>
-          <p className="text-sm text-text-secondary">add tag set or click and listen immediately</p>
+          <p className="text-sm text-text-secondary">add tag set or listen immediately</p>
         </div>
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
           <CarouselContent>

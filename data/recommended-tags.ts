@@ -18,7 +18,7 @@ export const RECOMMENDED_TAGS: RecommendedTag[] = [
     ],
   },
   {
-    tag: "TONGUE",
+    tag: "TONGUE TIED",
     description: "Blue batman coffee",
     videos: [
       "https://youtu.be/YXfLjIgvhD0?si=hXC4AE6o9g9xsjXg",
@@ -45,13 +45,22 @@ export const RECOMMENDED_TAGS: RecommendedTag[] = [
       "https://music.youtube.com/watch?v=XJrTxW-QdEo&si=yo08rq2r7u-zkTJ3",
     ],
   },
-    {
-    tag: "DOWN",
+  {
+    tag: "neither",
     description: "If he said help me kill the president",
     videos: [
       "https://music.youtube.com/watch?v=6Ioib7lSWNw&si=VqN2RZDJ1jkC0Ln-",
       "https://music.youtube.com/watch?v=nyuo9-OjNNg&si=7iymsWuq6LGGQct9",
       "https://music.youtube.com/watch?v=w-0XOTVFs2k&si=28MidM5AxrZ_bv6z",
+    ],
+  },
+  {
+    tag: "for Declan",
+    description: "Petite entaille",
+    videos: [
+      "https://music.youtube.com/watch?v=numQPLqkb8Y&si=Ket8Ov-QCSgdfLRP",
+      "https://music.youtube.com/watch?v=ykP640XEjSQ&si=6MaByO5uKXbpThnh",
+      "https://music.youtube.com/watch?v=vD7ODM0YjmE&si=DKNKdi6cuLc7SKyk",
     ],
   },
 ]
