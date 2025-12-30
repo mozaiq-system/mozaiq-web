@@ -14,6 +14,9 @@ export const RECOMMENDED_TAGS: RecommendedTag[] = [
       "https://music.youtube.com/watch?v=z3lXnvbwqlA&si=Pu9-vEXa0BzRIQr4",
       "https://music.youtube.com/watch?v=Bxw-FnXWvB4&si=nIM1mY_6dJA3njRi",
       "https://music.youtube.com/watch?v=ChTPReYJxt4&si=dqabj6ilb4rHZzYl",
+      "https://music.youtube.com/watch?v=DotWP_7De-k&si=zBW9N9pPonwM-weH",
+      "https://music.youtube.com/watch?v=L8NwbaUXBmo&si=XCcjHTSn13sQLljO",
+      "https://music.youtube.com/watch?v=XJrTxW-QdEo&si=yo08rq2r7u-zkTJ3",
 
     ],
   },

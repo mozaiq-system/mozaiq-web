@@ -169,70 +169,74 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
           <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">Tag Preset</h2>
           <p className="text-sm text-text-secondary">add tag set or click and listen immediately</p>
         </div>
-        <Carousel opts={{ align: "start", loop: true }} className="w-full">
-          <CarouselContent>
-            {RECOMMENDED_TAGS.map((recommendation) => {
-              const isSaving = savingTag === recommendation.tag
-              const isCompleted = completedTags.includes(recommendation.tag)
-              const coverId = getYouTubeId(recommendation.videos[0])
-              const coverImage = coverId ? `https://i.ytimg.com/vi/${coverId}/hq720.jpg` : null
+        <div className="relative w-full">
+          <Carousel opts={{ align: "start", loop: true }} className="w-full">
+            <CarouselContent className="pt-4">
+              {RECOMMENDED_TAGS.map((recommendation) => {
+                const isSaving = savingTag === recommendation.tag
+                const isCompleted = completedTags.includes(recommendation.tag)
+                const coverId = getYouTubeId(recommendation.videos[0])
+                const coverImage = coverId ? `https://i.ytimg.com/vi/${coverId}/hq720.jpg` : null
 
-              return (
-                <CarouselItem key={recommendation.tag} className="basis-auto pl-4">
-                  <div className="flex justify-center">
-                    <a
-                      href={buildPlaylistUrl(recommendation.videos)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group relative flex w-full max-w-[220px] flex-col rounded-2xl border border-border bg-background/80 p-3 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:max-w-[240px] sm:min-h-[210px] lg:min-h-[240px]"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-lg font-semibold text-foreground">{recommendation.tag}</h3>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.preventDefault()
-                            event.stopPropagation()
-                            handleAddRecommended(recommendation.tag)
-                          }}
-                          disabled={isSaving || isCompleted}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:border-border/60 disabled:text-text-tertiary"
-                          aria-label={`${recommendation.tag} 태그 추천을 추가`}
-                        >
-                          {isSaving ? (
-                            <Loader2 className="h-5 w-5 animate-spin text-accent" />
-                          ) : isCompleted ? (
-                            <Check className="h-5 w-5 text-accent" />
-                          ) : (
-                            <Plus className="h-5 w-5" />
-                          )}
-                        </button>
-                      </div>
-                      <div className="mt-3 flex-1 space-y-2">
-                        <p className="text-xs text-text-secondary leading-snug">{recommendation.description}</p>
-                        <div className="relative aspect-square overflow-hidden rounded-2xl">
-                          {coverImage ? (
-                            <img
-                              src={coverImage}
-                              alt={`${recommendation.tag} 추천 썸네일`}
-                              className="h-full w-full rounded-2xl object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-xs text-text-tertiary">
-                              Preview unavailable
-                            </div>
-                          )}
+                return (
+                  <CarouselItem key={recommendation.tag} className="basis-auto pl-4">
+                    <div className="flex justify-center">
+                      <a
+                        href={buildPlaylistUrl(recommendation.videos)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative flex w-full max-w-[220px] flex-col rounded-2xl border border-border bg-background/80 p-3 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:max-w-[240px] sm:min-h-[210px] lg:min-h-[240px]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="text-lg font-semibold text-foreground">{recommendation.tag}</h3>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault()
+                              event.stopPropagation()
+                              handleAddRecommended(recommendation.tag)
+                            }}
+                            disabled={isSaving || isCompleted}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:border-border/60 disabled:text-text-tertiary"
+                            aria-label={`${recommendation.tag} 태그 추천을 추가`}
+                          >
+                            {isSaving ? (
+                              <Loader2 className="h-5 w-5 animate-spin text-accent" />
+                            ) : isCompleted ? (
+                              <Check className="h-5 w-5 text-accent" />
+                            ) : (
+                              <Plus className="h-5 w-5" />
+                            )}
+                          </button>
                         </div>
-                      </div>
-                    </a>
-                  </div>
-                </CarouselItem>
-              )
-            })}
-          </CarouselContent>
-          <CarouselPrevious className="hidden sm:flex" />
-          <CarouselNext className="hidden sm:flex" />
-        </Carousel>
+                        <div className="mt-3 flex-1 space-y-2">
+                          <p className="text-xs text-text-secondary leading-snug line-clamp-1">{recommendation.description}</p>
+                          <div className="relative aspect-square overflow-hidden rounded-2xl">
+                            {coverImage ? (
+                              <img
+                                src={coverImage}
+                                alt={`${recommendation.tag} 추천 썸네일`}
+                                className="h-full w-full rounded-2xl object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-xs text-text-tertiary">
+                                Preview unavailable
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </a>
+                    </div>
+                  </CarouselItem>
+                )
+              })}
+            </CarouselContent>
+            <div className="pointer-events-none absolute inset-y-0 left-0 right-0 z-20 flex items-center justify-between px-4">
+              <CarouselPrevious className="pointer-events-auto size-10 rounded-full border border-border bg-background/95 text-text-secondary shadow-sm transition hover:border-accent hover:text-accent" />
+              <CarouselNext className="pointer-events-auto size-10 rounded-full border border-border bg-background/95 text-text-secondary shadow-sm transition hover:border-accent hover:text-accent" />
+            </div>
+          </Carousel>
+        </div>
       </div>
     </section>
   )
