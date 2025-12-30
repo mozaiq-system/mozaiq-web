@@ -3,6 +3,13 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { loadMediaItems, saveMediaItems } from "@/lib/storage"
+import {
+  trackMediaUpdated,
+  trackMediaTagsUpdated,
+  trackMediaMetadataMultiFieldEdit,
+  trackPlaylistGenerated,
+  trackUiError,
+} from "@/lib/analytics"
 import { EditMediaModal } from "./edit-media-modal"
 
 interface MediaItem {
@@ -10,6 +17,8 @@ interface MediaItem {
   url: string
   tags: string[]
   timestamp: number
+  title?: string
+  channel?: string
 }
 
 interface VideoMetadata {
@@ -121,20 +130,38 @@ function buildYouTubePlaylistUrl(items: MediaItem[]): string | null {
   return `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(",")}`
 }
 
-function CreatePlaylistButton({ filteredItems }: { filteredItems: MediaItem[] }) {
+function CreatePlaylistButton({ filteredItems, selectedTags }: { filteredItems: MediaItem[]; selectedTags: string[] }) {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleCreatePlaylist = async () => {
     const playlistUrl = buildYouTubePlaylistUrl(filteredItems)
 
     if (!playlistUrl) {
+      trackPlaylistGenerated({
+        selectedTags,
+        resultMediaCount: filteredItems.length,
+        isOrdered: true,
+        success: false,
+        reason: "no_valid_videos",
+      })
       return
     }
 
     setIsLoading(true)
-    // Open the playlist in a new tab
-    window.open(playlistUrl, "_blank", "noopener,noreferrer")
-    setIsLoading(false)
+
+    try {
+      trackPlaylistGenerated({
+        selectedTags,
+        resultMediaCount: filteredItems.length,
+        isOrdered: true,
+        success: true,
+        playlistId: playlistUrl,
+      })
+
+      window.open(playlistUrl, "_blank", "noopener,noreferrer")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const hasValidVideos = filteredItems.some((item) => extractYouTubeId(item.url))
@@ -191,19 +218,66 @@ export function MediaGrid({ selectedTags }: MediaGridProps) {
     })
   }
 
-  const handleSaveEditedItem = (updatedItem: MediaItem) => {
+  const handleSaveEditedItem = async (updatedItem: MediaItem) => {
+    const originalItem = items.find((item) => item.id === updatedItem.id)
+    if (!originalItem) return
     const updatedItems = items.map((item) => (item.id === updatedItem.id ? updatedItem : item))
-    saveMediaItems(updatedItems as any).then(() => {
+    const tagsChanged = JSON.stringify(originalItem.tags) !== JSON.stringify(updatedItem.tags)
+    const titleChanged = (originalItem.title ?? "") !== (updatedItem.title ?? "")
+    const channelChanged = (originalItem.channel ?? "") !== (updatedItem.channel ?? "")
+    const fieldsUpdated: string[] = []
+    if (titleChanged) fieldsUpdated.push("title")
+    if (channelChanged) fieldsUpdated.push("channel")
+
+    try {
+      await saveMediaItems(updatedItems as any)
       setItems(updatedItems)
       setEditingItem(null)
-    })
+
+      trackMediaUpdated({
+        mediaId: updatedItem.id,
+        source: "manual",
+        modalName: "edit_media_modal",
+        hasTagsChanged: tagsChanged,
+        hasMetadataChanged: titleChanged || channelChanged,
+      })
+
+      if (tagsChanged) {
+        trackMediaTagsUpdated({
+          mediaId: updatedItem.id,
+          previousTags: originalItem.tags,
+          nextTags: updatedItem.tags,
+          editMode: "update",
+        })
+      }
+
+      trackMediaMetadataMultiFieldEdit({
+        mediaId: updatedItem.id,
+        fieldsUpdated,
+      })
+    } catch (error) {
+      console.error(error)
+      trackUiError({
+        where: "media_grid",
+        errorCode: "media_update_failed",
+        messageShort: "Failed to update media item",
+      })
+    }
   }
 
-  const handleDeleteItem = (itemId: string) => {
+  const handleDeleteItem = async (itemId: string) => {
     const updatedItems = items.filter((item) => item.id !== itemId)
-    saveMediaItems(updatedItems as any).then(() => {
+    try {
+      await saveMediaItems(updatedItems as any)
       setItems(updatedItems)
-    })
+    } catch (error) {
+      console.error(error)
+      trackUiError({
+        where: "media_grid",
+        errorCode: "media_delete_failed",
+        messageShort: "Failed to delete media item",
+      })
+    }
   }
 
   if (!mounted) return null
@@ -252,7 +326,7 @@ export function MediaGrid({ selectedTags }: MediaGridProps) {
               {filteredItems.length} track{filteredItems.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <CreatePlaylistButton filteredItems={filteredItems} />
+          <CreatePlaylistButton filteredItems={filteredItems} selectedTags={selectedTags} />
         </div>
 
         <div className="space-y-3">

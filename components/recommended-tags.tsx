@@ -5,6 +5,8 @@ import { Check, Loader2, Plus } from "lucide-react"
 import { addMediaItem, loadMediaItems } from "@/lib/storage"
 import { RECOMMENDED_TAGS } from "@/data/recommended-tags"
 import { fetchYouTubeMetadata } from "@/lib/youtube-utils"
+import { trackMediaCreated, trackMediaTagsUpdated, trackUiError } from "@/lib/analytics"
+import { useToast } from "@/hooks/use-toast"
 
 interface RecommendedTagsProps {
   onLibraryUpdate?: (tag: string) => void
@@ -13,11 +15,8 @@ interface RecommendedTagsProps {
 export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
   const [savingTag, setSavingTag] = useState<string | null>(null)
   const [completedTags, setCompletedTags] = useState<string[]>([])
-
-  const showToast = (message: string) => {
-    const event = new CustomEvent("showToast", { detail: { message } })
-    window.dispatchEvent(event)
-  }
+  const { toast } = useToast()
+  const notify = (message: string) => toast({ description: message })
 
   const buildPlaylistUrl = (videos: string[]) => {
     const ids = videos
@@ -35,11 +34,18 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
     setSavingTag(tag)
     try {
       const existing = await loadMediaItems()
-      const existingUrls = new Set(existing.map((item) => item.url))
-      const urlsToAdd = recommendation.videos.filter((video) => !existingUrls.has(video))
+      const existingIds = new Set(
+        existing
+          .map((item) => getYouTubeId(item.url))
+          .filter((id): id is string => Boolean(id)),
+      )
+      const urlsToAdd = recommendation.videos.filter((video) => {
+        const id = getYouTubeId(video)
+        return !(id && existingIds.has(id))
+      })
 
       if (urlsToAdd.length === 0) {
-        showToast("모든 추천 트랙이 이미 저장되어 있어요.")
+        notify("모든 추천 트랙이 이미 저장되어 있어요.")
         setCompletedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
         onLibraryUpdate?.(tag)
         return
@@ -53,7 +59,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         }),
       )
 
-      await Promise.all(
+      const createdItems = await Promise.all(
         urlsToAdd.map((url, index) => {
           const metadata = metadataByUrl.get(url)
           return addMediaItem({
@@ -66,12 +72,34 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         }),
       )
 
-      showToast(`${tag} 태그와 플레이리스트를 라이브러리에 추가했어요.`)
+      notify(`${tag} 태그와 플레이리스트를 라이브러리에 추가했어요.`)
       setCompletedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
       onLibraryUpdate?.(tag)
+
+      createdItems.forEach((created) => {
+        trackMediaCreated({
+          mediaId: created.id,
+          source: "prepared",
+          modalName: "recommended_tags_card",
+          hasTagsChanged: created.tags.length > 0,
+          hasMetadataChanged: false,
+        })
+
+        trackMediaTagsUpdated({
+          mediaId: created.id,
+          previousTags: [],
+          nextTags: created.tags,
+          editMode: "create",
+        })
+      })
     } catch (error) {
       console.error(error)
-      showToast("추천 태그를 추가하지 못했어요. 다시 시도해 주세요.")
+      trackUiError({
+        where: "recommended_tags",
+        errorCode: "prepared_media_failed",
+        messageShort: "Failed to add recommended tag bundle",
+      })
+      notify("추천 태그를 추가하지 못했어요. 다시 시도해 주세요.")
     } finally {
       setSavingTag(null)
     }
@@ -115,7 +143,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
                 href={buildPlaylistUrl(recommendation.videos)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative flex min-h-[320px] flex-col rounded-2xl border border-border bg-background/80 p-4 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[340px] lg:min-h-[360px]"
+                className="group relative flex flex-col rounded-2xl border border-border bg-background/80 p-4 shadow-sm transition-colors hover:border-accent hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:min-h-[320px] lg:min-h-[360px]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-lg font-semibold text-foreground">{recommendation.tag}</h3>
@@ -139,7 +167,8 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
                     )}
                   </button>
                 </div>
-                <div className="mt-3 flex-1 space-y-3">
+                <div className="mt-3 flex-1 space-y-2">
+                  <p className="text-xs text-text-secondary leading-snug">{recommendation.description}</p>
                   <div className="relative aspect-square overflow-hidden rounded-2xl">
                     {coverImage ? (
                       <img

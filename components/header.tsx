@@ -51,8 +51,8 @@ export function Header({ onMenuToggle, navItems = [] }: HeaderProps) {
   if (!mounted) {
     return (
       <header className="bg-background/80 backdrop-blur-md sticky top-0 z-40 theme-transition">
-        <div className="mx-auto flex w-full max-w-7xl items-center px-2 py-4 sm:px-3 lg:px-4">
-          <div className="flex flex-1 items-center gap-3">
+        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-2 py-4 sm:px-3 lg:px-4">
+          <div className="flex items-center gap-3">
             {onMenuToggle && (
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border md:hidden" />
             )}
@@ -80,8 +80,8 @@ export function Header({ onMenuToggle, navItems = [] }: HeaderProps) {
   return (
     <>
       <header className="bg-background/80 backdrop-blur-md sticky top-0 z-40 theme-transition">
-        <div className="mx-auto flex w-full max-w-7xl items-center px-2 py-4 sm:px-3 lg:px-4">
-          <div className="flex flex-1 items-center gap-3">
+        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-2 py-4 sm:px-3 lg:px-4">
+          <div className="flex items-center gap-3">
             {onMenuToggle && (
               <button
                 type="button"
@@ -96,9 +96,6 @@ export function Header({ onMenuToggle, navItems = [] }: HeaderProps) {
               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => router.push("/")}
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-light flex items-center justify-center">
-                <span className="text-white font-bold text-sm">M</span>
-              </div>
               <h1 className="text-xl font-bold tracking-tight">MOZAIQ</h1>
             </div>
           </div>
