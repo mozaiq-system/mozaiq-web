@@ -88,7 +88,7 @@ function MediaCard({ item, index, onEdit }: { item: MediaItem; index: number; on
             e.stopPropagation()
             onEdit(item)
           }}
-          className="absolute top-2 right-2 p-1.5 rounded-lg hover:bg-surface transition-all duration-200 opacity-0 group-hover:opacity-100 z-20 pointer-events-auto hover:opacity-80"
+          className="absolute top-2 right-2 p-1.5 rounded-lg hover:bg-surface transition-all duration-200 opacity-100 md:opacity-0 md:group-hover:opacity-100 z-20 pointer-events-auto hover:opacity-80"
           aria-label="Edit media"
         >
           <svg className="w-5 h-5 text-text-secondary" fill="currentColor" viewBox="0 0 24 24">
