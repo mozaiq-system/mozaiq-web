@@ -7,13 +7,7 @@ import { RECOMMENDED_TAGS } from "@/data/recommended-tags"
 import { fetchYouTubeMetadata } from "@/lib/youtube-utils"
 import { trackMediaCreated, trackMediaTagsUpdated, trackUiError } from "@/lib/analytics"
 import { useToast } from "@/hooks/use-toast"
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
 
 interface RecommendedTagsProps {
   onLibraryUpdate?: (tag: string) => void
@@ -171,7 +165,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         </div>
         <div className="relative w-full">
           <Carousel opts={{ align: "start", loop: true }} className="w-full">
-            <CarouselContent className="pt-4">
+            <CarouselContent className="pt-4" containerClassName="overflow-x-auto pb-3">
               {RECOMMENDED_TAGS.map((recommendation) => {
                 const isSaving = savingTag === recommendation.tag
                 const isCompleted = completedTags.includes(recommendation.tag)
@@ -231,10 +225,6 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
                 )
               })}
             </CarouselContent>
-            <div className="pointer-events-none absolute inset-y-0 left-0 right-0 z-20 flex items-center justify-between px-4">
-              <CarouselPrevious className="pointer-events-auto size-10 rounded-full border border-border bg-background/95 text-text-secondary shadow-sm transition hover:border-accent hover:text-accent" />
-              <CarouselNext className="pointer-events-auto size-10 rounded-full border border-border bg-background/95 text-text-secondary shadow-sm transition hover:border-accent hover:text-accent" />
-            </div>
           </Carousel>
         </div>
       </div>
