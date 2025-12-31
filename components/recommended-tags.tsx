@@ -44,7 +44,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
       })
 
       const urlsToAdd: string[] = []
-      const itemsToUpdate: { id: string; previousTags: string[]; nextTags: string[] }[] = []
+      const itemsToUpdate: { id: string; videoId: string; previousTags: string[]; nextTags: string[] }[] = []
 
       recommendation.videos.forEach((video) => {
         const videoId = getYouTubeId(video)
@@ -59,6 +59,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         if (!hasTag) {
           itemsToUpdate.push({
             id: existingItem.id,
+            videoId,
             previousTags: [...existingItem.tags],
             nextTags: [...existingItem.tags, tag],
           })
@@ -69,7 +70,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         await Promise.all(itemsToUpdate.map((entry) => updateMediaItem(entry.id, { tags: entry.nextTags })))
         itemsToUpdate.forEach((entry) => {
           trackMediaTagsUpdated({
-            mediaId: entry.id,
+            mediaId: entry.videoId,
             previousTags: entry.previousTags,
             nextTags: entry.nextTags,
             editMode: "update",
@@ -110,8 +111,9 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
       onLibraryUpdate?.(tag)
 
       createdItems.forEach((created) => {
+        const mediaId = getYouTubeId(created.url) ?? created.id
         trackMediaCreated({
-          mediaId: created.id,
+          mediaId,
           source: "prepared",
           modalName: "recommended_tags_card",
           hasTagsChanged: created.tags.length > 0,
@@ -119,7 +121,7 @@ export function RecommendedTags({ onLibraryUpdate }: RecommendedTagsProps) {
         })
 
         trackMediaTagsUpdated({
-          mediaId: created.id,
+          mediaId,
           previousTags: [],
           nextTags: created.tags,
           editMode: "create",

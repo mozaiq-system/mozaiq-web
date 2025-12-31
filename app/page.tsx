@@ -16,6 +16,7 @@ import {
   trackUiError,
 } from "@/lib/analytics"
 import { extractYouTubeId } from "@/lib/youtube-utils"
+import { TagFilterSelection, createEmptyTagFilterSelection } from "@/lib/tag-filters"
 
 interface NewMediaData {
   url: string
@@ -38,13 +39,13 @@ interface MediaModalState {
 }
 
 function useMediaWorkspace() {
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [tagFilters, setTagFilters] = useState<TagFilterSelection>(() => createEmptyTagFilterSelection())
   const [mediaModalState, setMediaModalState] = useState<MediaModalState | null>(null)
   const [savedTagsVersion, setSavedTagsVersion] = useState(0)
   const [mediaLibraryVersion, setMediaLibraryVersion] = useState(0)
 
-  const handleSavedTagsSelect = (tags: string[]) => {
-    setSelectedTags(tags)
+  const handleSavedTagsSelect = (selection: TagFilterSelection) => {
+    setTagFilters(selection)
   }
 
   const handleAddMediaOpen = async (metadata: NewMediaData, thumbnail: string) => {
@@ -131,8 +132,10 @@ function useMediaWorkspace() {
         if (titleChanged) fieldsUpdated.push("title")
         if (channelChanged) fieldsUpdated.push("channel")
 
+        const mediaId = extractYouTubeId(created.url) ?? created.id
+
         trackMediaCreated({
-          mediaId: created.id,
+          mediaId,
           source: "manual",
           modalName: "edit_media_modal",
           hasTagsChanged: created.tags.length > 0,
@@ -140,14 +143,14 @@ function useMediaWorkspace() {
         })
 
         trackMediaTagsUpdated({
-          mediaId: created.id,
+          mediaId,
           previousTags: [],
           nextTags: created.tags,
           editMode: "create",
         })
 
         trackMediaMetadataMultiFieldEdit({
-          mediaId: created.id,
+          mediaId,
           fieldsUpdated,
         })
 
@@ -182,8 +185,10 @@ function useMediaWorkspace() {
         channel: item.channel,
       })
 
+      const mediaId = extractYouTubeId(originalItem.url) ?? originalItem.id
+
       trackMediaUpdated({
-        mediaId: item.id,
+        mediaId,
         source: "manual",
         modalName: "edit_media_modal",
         hasTagsChanged: tagsChanged,
@@ -192,7 +197,7 @@ function useMediaWorkspace() {
 
       if (tagsChanged) {
         trackMediaTagsUpdated({
-          mediaId: item.id,
+          mediaId,
           previousTags: originalItem.tags,
           nextTags: item.tags,
           editMode: "update",
@@ -200,7 +205,7 @@ function useMediaWorkspace() {
       }
 
       trackMediaMetadataMultiFieldEdit({
-        mediaId: item.id,
+        mediaId,
         fieldsUpdated,
       })
 
@@ -237,7 +242,7 @@ function useMediaWorkspace() {
   }
 
   return {
-    selectedTags,
+    tagFilters,
     savedTagsRefreshKey: savedTagsVersion.toString(),
     mediaLibraryVersion,
     mediaModalState,
@@ -251,10 +256,10 @@ function useMediaWorkspace() {
 }
 
 interface MediaWorkspaceProps {
-  selectedTags: string[]
+  tagFilters: TagFilterSelection
   savedTagsRefreshKey: string
   mediaLibraryVersion: number
-  onSavedTagsSelect: (tags: string[]) => void
+  onSavedTagsSelect: (selection: TagFilterSelection) => void
   onAddMedia: (metadata: NewMediaData, thumbnail: string) => Promise<void> | void
   modalState: MediaModalState | null
   onCloseModal: () => void
@@ -263,7 +268,7 @@ interface MediaWorkspaceProps {
 }
 
 function MediaWorkspace({
-  selectedTags,
+  tagFilters,
   savedTagsRefreshKey,
   mediaLibraryVersion,
   onSavedTagsSelect,
@@ -307,7 +312,7 @@ function MediaWorkspace({
 
       <div className="flex-1 px-2 sm:px-3 lg:px-4 pb-8">
         <div className="max-w-7xl mx-auto w-full">
-          <MediaGrid key={mediaLibraryVersion} selectedTags={selectedTags} />
+          <MediaGrid key={mediaLibraryVersion} tagFilters={tagFilters} />
         </div>
       </div>
 
@@ -330,7 +335,7 @@ function MediaWorkspace({
 export default function Home() {
   const [mounted, setMounted] = useState(false)
   const {
-    selectedTags,
+    tagFilters,
     savedTagsRefreshKey,
     mediaLibraryVersion,
     mediaModalState,
@@ -356,7 +361,7 @@ export default function Home() {
         <RecommendedTags onLibraryUpdate={handleRecommendedUpdate} />
 
         <MediaWorkspace
-          selectedTags={selectedTags}
+          tagFilters={tagFilters}
           savedTagsRefreshKey={savedTagsRefreshKey}
           mediaLibraryVersion={mediaLibraryVersion}
           onSavedTagsSelect={handleSavedTagsSelect}
