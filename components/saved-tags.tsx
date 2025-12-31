@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { loadMediaItems } from "@/lib/storage"
+import { cn } from "@/lib/utils"
+import { TagFilterSelection } from "@/lib/tag-filters"
 
 interface MediaItem {
   id: string
@@ -12,7 +14,7 @@ interface MediaItem {
 }
 
 interface SavedTagsProps {
-  onTagsSelect: (tags: string[]) => void
+  onTagsSelect: (selection: TagFilterSelection) => void
   refreshToken?: string
 }
 
@@ -26,7 +28,7 @@ function extractUniqueTags(items: MediaItem[]): string[] {
 
 export function SavedTags({ onTagsSelect, refreshToken }: SavedTagsProps) {
   const [tags, setTags] = useState<string[]>([])
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [tagStates, setTagStates] = useState<Record<string, "include" | "exclude">>({})
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -43,11 +45,25 @@ export function SavedTags({ onTagsSelect, refreshToken }: SavedTagsProps) {
   if (!mounted || tags.length === 0) return null
 
   const handleTagClick = (tag: string) => {
-    const isRemoving = selectedTags.includes(tag)
-    const newSelectedTags = isRemoving ? selectedTags.filter((t) => t !== tag) : [...selectedTags, tag]
-    setSelectedTags(newSelectedTags)
-    onTagsSelect(newSelectedTags)
+    const nextState = tagStates[tag] === "include" ? "exclude" : tagStates[tag] === "exclude" ? undefined : "include"
+    const updatedStates = { ...tagStates }
 
+    if (!nextState) {
+      delete updatedStates[tag]
+    } else {
+      updatedStates[tag] = nextState
+    }
+
+    setTagStates(updatedStates)
+
+    const include = Object.entries(updatedStates)
+      .filter(([, state]) => state === "include")
+      .map(([tagName]) => tagName)
+    const exclude = Object.entries(updatedStates)
+      .filter(([, state]) => state === "exclude")
+      .map(([tagName]) => tagName)
+
+    onTagsSelect({ include, exclude })
   }
 
   return (
@@ -59,7 +75,10 @@ export function SavedTags({ onTagsSelect, refreshToken }: SavedTagsProps) {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: index * 0.05, duration: 0.2 }}
           onClick={() => handleTagClick(tag)}
-          className={`tag-chip ${selectedTags.includes(tag) ? "tag-chip-selected" : ""}`}
+          className={cn("tag-chip", {
+            "tag-chip-selected": tagStates[tag] === "include",
+            "tag-chip-excluded": tagStates[tag] === "exclude",
+          })}
         >
           {tag}
         </motion.button>

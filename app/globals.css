@@ -177,6 +177,14 @@
     color: #0d0d10;
   }
 
+  .tag-chip-excluded {
+    @apply bg-red-100 border-red-500 text-red-700;
+  }
+
+  .dark .tag-chip-excluded {
+    @apply bg-red-500/30 border-red-400 text-red-50;
+  }
+
   .tag-chip-active {
     /* Active state with translucent accent fill - light: #6C4AFF15, dark: #6C4AFF30 */
     background-color: rgba(108, 74, 255, 0.083);

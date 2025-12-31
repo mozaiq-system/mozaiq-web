@@ -11,6 +11,7 @@ import {
   trackUiError,
 } from "@/lib/analytics"
 import { EditMediaModal } from "./edit-media-modal"
+import { TagFilterSelection, hasActiveTagFilters } from "@/lib/tag-filters"
 
 interface MediaItem {
   id: string
@@ -27,7 +28,7 @@ interface VideoMetadata {
 }
 
 interface MediaGridProps {
-  selectedTags: string[]
+  tagFilters: TagFilterSelection
 }
 
 function extractYouTubeId(url: string): string | null {
@@ -130,15 +131,16 @@ function buildYouTubePlaylistUrl(items: MediaItem[]): string | null {
   return `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(",")}`
 }
 
-function CreatePlaylistButton({ filteredItems, selectedTags }: { filteredItems: MediaItem[]; selectedTags: string[] }) {
+function CreatePlaylistButton({ filteredItems, tagFilters }: { filteredItems: MediaItem[]; tagFilters: TagFilterSelection }) {
   const [isLoading, setIsLoading] = useState(false)
+  const includedTags = tagFilters.include
 
   const handleCreatePlaylist = async () => {
     const playlistUrl = buildYouTubePlaylistUrl(filteredItems)
 
     if (!playlistUrl) {
       trackPlaylistGenerated({
-        selectedTags,
+        selectedTags: includedTags,
         resultMediaCount: filteredItems.length,
         isOrdered: true,
         success: false,
@@ -151,7 +153,7 @@ function CreatePlaylistButton({ filteredItems, selectedTags }: { filteredItems: 
 
     try {
       trackPlaylistGenerated({
-        selectedTags,
+        selectedTags: includedTags,
         resultMediaCount: filteredItems.length,
         isOrdered: true,
         success: true,
@@ -197,7 +199,7 @@ function CreatePlaylistButton({ filteredItems, selectedTags }: { filteredItems: 
   )
 }
 
-export function MediaGrid({ selectedTags }: MediaGridProps) {
+export function MediaGrid({ tagFilters }: MediaGridProps) {
   const [items, setItems] = useState<MediaItem[]>([])
   const [mounted, setMounted] = useState(false)
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null)
@@ -284,8 +286,15 @@ export function MediaGrid({ selectedTags }: MediaGridProps) {
 
   if (!mounted) return null
 
-  const filteredItems =
-    selectedTags.length > 0 ? items.filter((item) => selectedTags.every((tag) => item.tags.includes(tag))) : items
+  const filteredItems = hasActiveTagFilters(tagFilters)
+    ? items.filter((item) => {
+        const matchesIncluded =
+          tagFilters.include.length === 0 || tagFilters.include.every((tag) => item.tags.includes(tag))
+        const matchesExcluded =
+          tagFilters.exclude.length === 0 || tagFilters.exclude.every((tag) => !item.tags.includes(tag))
+        return matchesIncluded && matchesExcluded
+      })
+    : items
 
   if (items.length === 0) {
     return (
@@ -308,9 +317,7 @@ export function MediaGrid({ selectedTags }: MediaGridProps) {
   if (filteredItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-text-secondary text-center">
-          No tracks found with {selectedTags.length === 1 ? "this tag" : "all selected tags"}.
-        </p>
+        <p className="text-text-secondary text-center">No tracks match the current tag filters.</p>
       </div>
     )
   }
@@ -328,7 +335,7 @@ export function MediaGrid({ selectedTags }: MediaGridProps) {
               {filteredItems.length} track{filteredItems.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <CreatePlaylistButton filteredItems={filteredItems} selectedTags={selectedTags} />
+          <CreatePlaylistButton filteredItems={filteredItems} tagFilters={tagFilters} />
         </div>
 
         <div className="space-y-3">
